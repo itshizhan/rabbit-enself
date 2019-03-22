@@ -119,6 +119,7 @@ function createWindow() {
 
 app.on('ready', ()=>{
     createWindow();
+    /*
     globalShortcut.register('Control+O', () => {
         console.log('saving...')
         mainWindow.webContents.send('shortcut-saving',"save");
@@ -127,6 +128,7 @@ app.on('ready', ()=>{
         console.log('empty...')
         mainWindow.webContents.send('shortcut-saving',"new");
     });
+    */
 })
 
 app.on('window-all-closed', () => {

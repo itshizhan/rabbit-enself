@@ -2,31 +2,29 @@
     <div>
         <el-container>
         <el-header height="50" style="padding: 5px;">
-      
-       <div style="width:500px;float:left;"> 
-            <h1 style="font-size:40px" @mouseup="getSelect2">{{enWord}}</h1> 
-            <h3>{{wordMaster.pronunciation}} </h3>
-            <h2>{{wordMaster.meaning}} </h2>
-        </div>        
-        <div style="float:left;">
-            <h2>{{rootIndex}}</h2>
+       <div style="width:550px;float:left;"> 
+            <div style="width:500px;float:left;"> 
+                <h1 style="font-size:40px" @mouseup="getSelect2">{{enWord}}</h1> 
+                <h3>{{wordMaster.pronunciation}} </h3>
+                <h2>{{wordMaster.meaning}} </h2>
+            </div>        
+            <div style="float:left;">
+                <h2>{{rootIndex}}</h2>
+            </div>
+       </div>
+        <div style="width:400px;float:right;"> 
+            <div style="width:250px margin-left:50px"> 
+            <el-input v-model="inputStr" size="medium" @keydown.native="txtStrInputHandle" ref="txtInputStr"></el-input>
+            </div>
+            <div style="width:400px;margin-top:10px;">
+                <el-button @click="newWordCheck">重新开始</el-button>           
+                <el-button @click="downMeaning">查字典</el-button>               
+                <el-button @click="editNewRoot">新字根</el-button>                               
+                <el-button @click="saveWordSplit">保存拆分</el-button>                              
+            </div>
         </div>
-        <div style="width:250px;float:right; margin-left:50px"> 
-        <el-input v-model="inputStr" size="medium" @keyup.enter.native="appedChWord" ref="txtInputStr"></el-input>
-        </div>
-        <div style="float:left;margin-left:20px;">            
-                   
-        </div>
-        
       </el-header>
-        <el-main style="padding: 0px;">
-            <div style="float:right;margin-left:20px;">                        
-            <el-button @click="newWordCheck">重新开始拆分</el-button>           
-            <el-button @click="downMeaning">查字典</el-button>               
-            <el-button @click="editNewRoot">新字根</el-button>               
-            <el-button @click="saveAndNextWord">新字拆分</el-button>
-            <el-button @click="saveWordSplit">保存拆分</el-button>                      
-        </div>
+        <el-main style="padding: 0px;">            
             <el-table :data="tableData">
                 <el-table-column v-for="col in columns" :key="col.field" :prop="col.field" :label="col.title" :width="col.width" >
   
@@ -134,27 +132,11 @@ import { TextDecoder } from 'util';
             }
         },
         created(){
-            this.wordDb = new EnWordsDb();
-            this.wordDb.initRoot();
             let _this = this;
-            this.enName = this.$route.params.entity;
-            //console.log("form created.." + this.enName);  
-            ipcRenderer.on('shortcut-saving',function(event, arg){
-                console.log("shortcut-saving..." +arg);
-                switch(arg){
-                    case "save":                        
-                        _this.saveWordSplit();
-                        break;
-                    case "new":                        
-                        _this.newWordCheck();
-                        break;
-                }                
-            });
-
-            // Mousetrap.bind('ctrl+s', function() { 
-            //     _this.saveWordSplit(); 
-            // });
-        
+            this.wordDb = new EnWordsDb();
+            this.wordDb.initRoot((lastMaster)=>{
+                _this.wordData = lastMaster;                
+            });                        
         } ,
         beforeDestroy(){
             this.wordDb.closeDb();
@@ -212,30 +194,29 @@ import { TextDecoder } from 'util';
             resetEnWord:function(){
                 let tmp = '';
                 let findRoot = false;
+                let misWord = '';//处理结尾带忽略字母的
                 this.tableData.forEach(word => {                    
                     if(word.partWord){
                         tmp += word.partWord;
+                        misWord = word.wordbase;
                     }else{
+                        misWord = '';
                         tmp += word.wordbase;
                     }
                     if(word.isroot==1)
                         findRoot = true;
                 });
+                //如果最后一位还忽略字母，显示这个忽略的末位
+                if(misWord.length>0){
+                    //console.log(misWord);
+                    //取最后的字母                    
+                    tmp += misWord.substring(misWord.length-1);
+                }
                 //console.log('reset enword..' + findRoot);
                 if(!findRoot)
                     this.rootIndex = -1;
                 this.enWord = tmp;
-            },
-            saveAndNextWord:function(){
-                if(this.tableData && this.tableData.length>0){
-                    //执行保存
-                    console.log('todo:saveSplit....')
-                }
-                this.dialogFormVisible=true;
-                this.$nextTick(function(){
-                    this.$refs.firstInput.$el.querySelector('input').focus();
-                });
-            },
+            },            
             nextToMean:function(){
                 this.$nextTick(function(){
                     this.$refs.nextInput.$el.querySelector('input').focus();
@@ -358,6 +339,32 @@ import { TextDecoder } from 'util';
                 sel.collapseToStart();    
                 this.appendSplitWord(txt);                
             },
+            txtStrInputHandle(event){      
+                //console.log(event);          
+                switch(event.keyCode){
+                    case 13://回车添加子拆分
+                        this.appedChWord();
+                        break;
+                    case 79://'o' ctrl+o 为保存单词拆分
+                        if(event.ctrlKey){
+                            this.saveWordSplit();
+                            event.stopPropagation();
+                        }
+                        break;
+                    case 78://'n'  ctrl+n 为新增单词拆分，消除非保存的
+                        if(event.ctrlKey){
+                            this.newWordCheck();
+                            event.stopPropagation();
+                        }
+                        break;
+                    case 68://'d'  ctrl+d 为查字典
+                        if(event.ctrlKey){
+                            this.downMeaning();
+                            event.stopPropagation();
+                        }
+                        break;
+                }
+            },
             appendSplitWord(txt){
                 let wordBase = txt;
                 let _this = this;
@@ -412,7 +419,7 @@ import { TextDecoder } from 'util';
                 this.resetEnWord();      
             },
             appedChWord(){
-                this.enWord += this.inputStr;
+                //this.enWord += this.inputStr;
                 this.appendSplitWord(this.inputStr);
                 this.inputStr = '';
                 this.$nextTick(function(){

@@ -19,7 +19,7 @@ export default class EnWordsDb{
         this.dictRoot=[];     
         this.dictWords=[];
     }
-    initRoot(){
+    initRoot(cb){
         //读取所有父节
         this.db.all("select id,word,pronunciation,meaning ,100 as pos  from  wordbase union\
              select id, word,pronunciation,meaning, 1 as pos from wordParent order by pos asc",(err,data)=>{                    
@@ -47,10 +47,26 @@ export default class EnWordsDb{
             });
         });
         this.db.all("select id,word,pronunciation,meaning,memo from wordMaster",(err,data)=>{
-            data.forEach(row => {
-                this.dictWords[row.word] =row;
-            });            
+            //保留最后两个值            
+            data.forEach(row => {                
+                this.dictWords[row.word] =row;                
+            });               
+            let last = this.getLastMaster(2,data);
+            console.log(last);
+            cb(last);         
         });
+    }
+    getLastMaster(max,data){
+        //计算开始位数
+        let start = 0;
+        if(data.length>=max)
+            start = data.length - max;
+        console.log('start...' + start);
+        let arr =[];
+        for(let i=start;i<data.length;i++){            
+            arr.push(data[i]);
+        }
+        return arr;
     }
     getWordMaster(word){
         if(this.dictWords[word]){
