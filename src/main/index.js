@@ -30,8 +30,6 @@ let cache = apicache.middleware;
 let downFileName = "";//下载的
 import routes from './routers'
 import Vue from 'vue';
-import axios from './utils/http';
-
 
 function createWindow() {
     const app = express();

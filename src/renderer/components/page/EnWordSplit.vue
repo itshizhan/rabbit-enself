@@ -105,6 +105,7 @@
     //var Mousetrap = require('mousetrap');
     import axios from 'axios';
     import { constants } from 'http2';
+import { TextDecoder } from 'util';
     export default {         
         data(){
             return {
@@ -165,9 +166,7 @@
                     _this.zhMeaning = '--';
                     return;
                 }
-                _this.wordMaster = _this.wordDb.getWordMaster(val);
-                console.log(_this.wordMaster.id);
-                console.log(_this.wordMaster.word);
+                _this.wordMaster = _this.wordDb.getWordMaster(val);               
                 if(_this.wordMaster.id==-1){
                     this.wordDb.getWord(val,(err,data)=>{
                         if(data){                        
@@ -201,7 +200,7 @@
                     let content = response.data.replace(/[\r\n]/g, "");        
                     let obj = JSON.parse(content); 
                     _this.wordMaster.meaning = obj.meaning;  
-                    _this.wordMaster.pronunciation = obj.pronun; 
+                    _this.wordMaster.pronunciation = obj.pronunciation; 
                 }).catch(function (error) {
                     console.log("error:");
                     console.log(error);
@@ -377,9 +376,10 @@
                 if(hasRoot){                    
                     txt = "-" + txt;
                 }else{
+                    console.log("isRoot..." + txt);
                     if(this.wordDb.isRoot(txt)){
                         isroot =1;
-                        this.rootIndex = this.enWord.indexOf(txt);
+                        this.rootIndex = this.enWord.length;
                     }else{
                          if(txt.indexOf('-')>-1){
                              wordBase = txt.replace(/-/g,'');//清空所有“-”
