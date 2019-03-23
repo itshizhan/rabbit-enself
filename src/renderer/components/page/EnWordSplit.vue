@@ -39,12 +39,12 @@
                     </template>
                 </el-table-column>
             </el-table>
-            <div style="width:500px;margin-top:20px;">
-                <el-input v-model="wordMaster.memo" type="textarea" :autosize="{ minRows: 3, maxRows: 6}" placeholder="请录入单词助记" ref="nextInput" @keyup.enter.native="saveWordSplit" ></el-input>
+            <div style="width:500px;margin-top:5px;">
+                <el-input v-model="wordMaster.memo" type="textarea" :autosize="{ minRows: 2, maxRows: 4}" placeholder="请录入单词助记" ref="nextInput" @keyup.enter.native="saveWordSplit" ></el-input>
                
             </div>
             
-            <div style="width:900px;height:600px;margin-top:20px;">
+            <div style="width:900px;height:600px;margin-top:5px;">
                <el-table :data="wordData">
                 <el-table-column  prop="word" label="单词" width="200" >  
                 </el-table-column>
@@ -81,7 +81,7 @@
                </el-form-item>               
                <el-form-item>
                <el-input v-model="dialogEditObj.meaning" size="small" placeholder="请录入新的意思" ref="firstPreInput" ></el-input>
-               <label @click="resetLastPreMeaning">{{lastPreMeaning}}</label>
+               <label @click="resetLastPreMeaning">{{lastPreMeaning.meaning}}</label>
                </el-form-item> 
                <el-form-item>
                <el-input v-model="dialogEditObj.partWord"  placeholder="组合到单词中的字符"  @keyup.enter.native="checkPreWord" ></el-input>
@@ -99,7 +99,8 @@
 </template>
 <script>   
     import {ipcRenderer} from "electron";
-    import EnWordsDb from "../../enwords";   
+    import EnWordsDb from "../../enwords"; 
+    import EnWordLast from "../../enwordlast";   
     //var Mousetrap = require('mousetrap');
     import axios from 'axios';
     import { constants } from 'http2';
@@ -113,13 +114,14 @@ import { TextDecoder } from 'util';
                 pronun:'',
                 newBase:'',
                 newMeaning:'',
-                lastPreMeaning:'',
+                lastPreMeaning:{},
                 searchResult:'',
                 dialogFormVisible:false,  
                 dialogPefixVisible:false, 
                 dialogEditObj:{},
                 wordMaster:{memo:''},
                 wordDb:null,
+                lastPreWord:new EnWordLast(),
                 tableData:[],
                 wordData:[],
                 rootIndex:-1,
@@ -229,7 +231,11 @@ import { TextDecoder } from 'util';
                 });
             },
             editPre:function(row){
-                this.dialogEditObj=row;
+                this.lastPreMeaning = {};//清空lastPreMeaning
+                this.lastPreWord.getLast(row.word,(data)=>{
+                    this.lastPreMeaning = data;
+                });
+                this.dialogEditObj=row;                
                 this.dialogPefixVisible=true;
                 this.$nextTick(function(){
                     this.$refs.firstPreInput.$el.querySelector('input').focus();
@@ -251,14 +257,16 @@ import { TextDecoder } from 'util';
                 });                              
             },
             resetLastPreMeaning(){
-                this.dialogEditObj.meaning = this.lastPreMeaning;
+                this.dialogEditObj.meaning = this.lastPreMeaning.meaning;
+                this.dialogEditObj.partWord = this.lastPreMeaning.partword;
                 let _this = this;
                 this.$nextTick(function(){
                     _this.$refs.firstPreInput.$el.querySelector('input').focus();
                 });
             },
             checkPreWord:function(){                
-                this.lastPreMeaning = this.dialogEditObj.meaning;
+                //this.lastPreMeaning = this.dialogEditObj.meaning;
+                this.lastPreWord.setLast(this.dialogEditObj.word,this.dialogEditObj.meaning,this.dialogEditObj.partWord);
                 this.resetEnWord();
                 this.dialogPefixVisible=false;  
             },
@@ -382,8 +390,7 @@ import { TextDecoder } from 'util';
                 }
                 if(hasRoot){                    
                     txt = "-" + txt;
-                }else{
-                    console.log("isRoot..." + txt);
+                }else{                    
                     if(this.wordDb.isRoot(txt)){
                         isroot =1;
                         this.rootIndex = this.enWord.length;
