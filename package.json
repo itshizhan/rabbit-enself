@@ -1,5 +1,5 @@
 {
-  "name": "rabbit-ohis",
+  "name": "rabbit-enself",
   "version": "0.0.1",
   "author": "kevin2y <61150866@qq.com>",
   "description": "An electron-vue project",
@@ -17,8 +17,8 @@
     "postinstall": "install-app-deps"
   },
   "build": {
-    "productName": "dog-music",
-    "appId": "org.simulatedgreg.electron-vue",
+    "productName": "rabbit-enself",
+    "appId": "com.cnblogs.kevin-y.rabbit-enself",
     "directories": {
       "output": "build"
     },

@@ -61,7 +61,7 @@ def get_task(task_id):
 def get_word(word):    
     #http://www.iciba.com/structure    
     driver.get("http://www.iciba.com/" + word)
-    time.sleep(1)
+    time.sleep(0.5)
     # xpath = "/html/body/div[4]/div[6]/div[2]/div[1]/div/div/ul"
     # xpath = "/html/body/div[3]/div[6]/div[2]/div[1]/div/div/ul"    #       
     #body > div.screen > div.container > div.container-left > div.js-base-info > div > div > ul
