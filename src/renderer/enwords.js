@@ -52,7 +52,7 @@ export default class EnWordsDb{
                 this.dictWords[row.word] =row;                
             });               
             let last = this.getLastMaster(2,data);
-            console.log(last);
+            //console.log(last);
             cb(last);         
         });
     }
@@ -61,7 +61,7 @@ export default class EnWordsDb{
         let start = 0;
         if(data.length>=max)
             start = data.length - max;
-        console.log('start...' + start);
+        //console.log('start...' + start);
         let arr =[];
         for(let i=start;i<data.length;i++){            
             arr.push(data[i]);
