@@ -231,6 +231,19 @@ export default class EnWordsDb{
         this.db.all("select * from " +tableName, cb);
     }
 
+    getTableAll(tableName){ 
+        let _this = this;
+        return new Promise(function(resolve,reject){
+            _this.db.all("select * from " +tableName, (err,data)=>{
+                if(err){
+                    return reject(err);
+                }else{
+                    resolve(data);
+                }
+            });
+        });
+    }
+
     closeDb(){
         this.db.close();
     }

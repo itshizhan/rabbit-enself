@@ -33,6 +33,11 @@ export default new Router({
                     path:'/enwordsplit',
                     component: resolve => require(['../components/page/EnWordSplit.vue'], resolve),
                     meta: { title: '单词拆分' }
+                },
+                {
+                    path:'/enwordstudy',
+                    component: resolve => require(['../components/page/EnWordStudy.vue'], resolve),
+                    meta: { title: '词根整理' }
                 }
             ]
         },        
