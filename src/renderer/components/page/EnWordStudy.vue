@@ -13,7 +13,9 @@
         <el-main style="padding: 0px;">
             <!-- 上表格 -->
 
-<el-table ref="topTable" :data="wordData01">
+<el-table ref="topTable" :data="wordData01" height="300" @row-dblclick="topDblClick">
+     <el-table-column  prop="index" label="序号" width="80" >  
+                </el-table-column>
     <el-table-column  prop="word" label="单词" width="200" >  
                 </el-table-column>
                 <el-table-column  prop="meaning" label="意思" width="600" >  
@@ -27,7 +29,7 @@
 
 <!-- 下表格 -->
 
-<el-table ref="dTable" :data="wordData02">
+<el-table ref="dTable" :data="wordData02"  height="350">
     <el-table-column  prop="word" label="单词" width="200" >  
                 </el-table-column>
                 <el-table-column  prop="meaning" label="意思" width="600" >  
@@ -45,12 +47,10 @@
     import EnWordStudy from "../../enwordstudy";
     export default {         
         data(){
-            return {
-                enWord:'',
-                searchResult:'',
+            return {      
+                enWord:'',         
                 dialogFormVisible:false,
-                dialogEditObj:{},
-                activeIndex:'',
+                dialogEditObj:{},               
                 wordData01:[],
                 wordData02:[],
                 columns:[
@@ -64,14 +64,17 @@
         created(){
             this.db = new EnWordStudy();
             this.db.init((data)=>{
-                this.wordData02 = data;
+                this.wordData01 = data;
             });                         
         } ,
         beforeDestroy(){
             this.db.closeDb();
         },
         methods:{
-            
+            topDblClick(row, column, event){
+                //console.log(row);
+                this.wordData02 = this.db.getTopWords(row.word);
+            }
             
         },
         mounted() {
