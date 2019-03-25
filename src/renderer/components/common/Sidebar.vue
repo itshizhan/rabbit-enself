@@ -52,6 +52,11 @@
                         index: 'enwordsplit',
                         title: '单词拆分'
                     }
+                    ,{
+                        icon: 'el-icon-upload',
+                        index: 'enwordstudy',
+                        title: '单词拆分'
+                    }
                 ]
             }
         },
@@ -87,4 +92,5 @@
     .sidebar > ul {
         height:100%;
     }
+    
 </style>
