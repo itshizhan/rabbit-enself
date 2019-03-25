@@ -81,7 +81,7 @@
                </el-form-item>               
                <el-form-item>
                <el-input v-model="dialogEditObj.meaning" size="small" placeholder="请录入新的意思" ref="firstPreInput" ></el-input>
-               <label @click="resetLastPreMeaning">{{lastPreMeaning.meaning}}</label>
+               <el-button @click="resetLastPreMeaning">重置</el-button>
                </el-form-item> 
                <el-form-item>
                <el-input v-model="dialogEditObj.partWord"  placeholder="组合到单词中的字符"  @keyup.enter.native="checkPreWord" ></el-input>
@@ -257,16 +257,22 @@ import { TextDecoder } from 'util';
                 });                              
             },
             resetLastPreMeaning(){
-                this.dialogEditObj.meaning = this.lastPreMeaning.meaning;
-                this.dialogEditObj.partWord = this.lastPreMeaning.partword;
-                let _this = this;
-                this.$nextTick(function(){
-                    _this.$refs.firstPreInput.$el.querySelector('input').focus();
-                });
+                 let _this = this;
+                this.lastPreWord.clear(this.dialogEditObj.word);  
+                this.wordDb.matchBase(this.dialogEditObj.word,(err,data)=>{ 
+                    if(data){
+                        _this.dialogEditObj.meaning = data.meaning; 
+                        _this.$nextTick(function(){
+                            _this.$refs.firstPreInput.$el.querySelector('input').focus();
+                        });                       
+                    }                             
+                });                    
+                //this.dialogEditObj.meaning = this.lastPreMeaning.meaning;
+                //this.dialogEditObj.partWord = this.lastPreMeaning.partword;
             },
             checkPreWord:function(){                
                 //this.lastPreMeaning = this.dialogEditObj.meaning;
-                this.lastPreWord.setLast(this.dialogEditObj.word,this.dialogEditObj.meaning,this.dialogEditObj.partWord);
+                this.lastPreWord.setLast(this.dialogEditObj.word,this.dialogEditObj);
                 this.resetEnWord();
                 this.dialogPefixVisible=false;  
             },
@@ -403,26 +409,34 @@ import { TextDecoder } from 'util';
                     }
                 }
                 
+                let word = txt;
+                let meaning = '';
+                let locat ='-';                  
                 //取意思
-                this.wordDb.matchBase(txt,(err,data)=>{
-                    let word = txt;
-                    let meaning = '';
-                    let locat ='-';                    
-                    if(data){                        
-                        word = data.word;
-                        meaning = data.meaning;
-                        locat=data.locat;                        
-                    }
-                    let row = {
-                        word:word,
-                        wordbase:wordBase,
-                        meaning:meaning,
-                        locat:locat,
-                        isroot:isroot,
-                        partWord:partword
-                    };                    
-                    _this.tableData.push(row);
-                });          
+                let isLast =this.lastPreWord.getLast(txt,(data)=>{
+                    meaning = data.meaning;
+                    locat = data.locat;
+                    partword = data.partWord;
+                });
+
+                if(!isLast){
+                    this.wordDb.matchBase(txt,(err,data)=>{                                        
+                        if(data){                        
+                            word = data.word;
+                            meaning = data.meaning;
+                            locat=data.locat;                        
+                        }                        
+                    });      
+                }    
+                let row = {
+                    word:word,
+                    wordbase:wordBase,
+                    meaning:meaning,
+                    locat:locat,
+                    isroot:isroot,
+                    partWord:partword
+                };                    
+                _this.tableData.push(row);
                 this.resetEnWord();      
             },
             appedChWord(){

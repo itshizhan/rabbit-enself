@@ -5,14 +5,21 @@ export default class EnWordLast{
         this.words = [];
     }
 
-    setLast(word,meaning,partword){
-        this.words[word] = {word:word,meaning:meaning,partword:partword};
+    setLast(key,word){
+        this.words[key] = word;
     }
 
     getLast(word,cb){
         if(this.words[word]){
             cb(this.words[word]);
+            return true;
+        }else{
+            return false;
         }
+    }
+
+    clear(word){
+        this.words[word] = null;
     }
 
 }
