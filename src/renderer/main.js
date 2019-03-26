@@ -1,10 +1,10 @@
 import Vue from 'vue'
 import axios from './utils/http'
 import ElementUI from 'element-ui';
-import './assets/styles/theme.scss';
+//import './assets/styles/theme.scss';
 import 'element-ui/lib/theme-chalk/index.css'; // 默认主题
 // import '../static/css/theme-green/index.css';       // 浅绿色主题
-import './assets/css/icon.css';
+//import './assets/css/icon.css';
 import './components/common/directives';
 //Vue.use(ElementUI);
 import App from './App'

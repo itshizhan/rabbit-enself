@@ -3,9 +3,10 @@
         <el-container>
         <el-header height="30" style="padding: 0px;">
       
-       <div style="width:150px;float:left;"> 
-            <el-input v-model="enWord" size="small" placeholder="请录入一个单词"  ></el-input>
-            
+       <div style="width:300px;float:left;"> 
+            <el-input v-model="enWord" size="mini" placeholder="请录入一个单词"  ></el-input>
+            <el-input v-model="topWordLen" size="mini" placeholder="请录入核心词拆分长度"  ></el-input>
+            <el-button @click="saveJson">保存文件</el-button>
         </div>
         <div style="float:left;margin-left:20px;" >                       
         </div>
@@ -31,12 +32,14 @@
 
 <el-table ref="dTable" :data="wordData02"  height="350">
     <el-table-column  prop="word" label="单词" width="200" >  
-                </el-table-column>
-                <el-table-column  prop="meaning" label="意思" width="600" >  
-                </el-table-column>
-                <el-table-column fixed="right" label="操作" width="100">
-                    
-                </el-table-column>
+    </el-table-column>
+    <el-table-column  prop="meaning" label="意思" width="600" >  
+    </el-table-column>
+    <el-table-column fixed="right" label="操作" width="100">
+        <template slot-scope="scope">                        
+            <el-button @click="removeFromWords(scope.$index)" type="text" size="small">删除</el-button>
+        </template>
+    </el-table-column>
 </el-table>
         </el-main>
     </el-container>  
@@ -44,15 +47,19 @@
     </div>
 </template>
 <script>   
+    var fs = require('fs'); // 引入fs模块
     import EnWordStudy from "../../enwordstudy";
     export default {         
         data(){
             return {      
                 enWord:'',         
+                topWordLen:'2',
                 dialogFormVisible:false,
                 dialogEditObj:{},               
                 wordData01:[],
                 wordData02:[],
+                wordEx:{roots:[],words:[]},//用于导出的字典对象
+                curRoot:{},
                 columns:[
                     {field:'word',title:'单词',width:100},
                     {field:"pronunciation",title:'发音',width:150},
@@ -73,9 +80,36 @@
         methods:{
             topDblClick(row, column, event){
                 //console.log(row);
-                this.wordData02 = this.db.getTopWords(row.word);
+                this.curRoot = row;
+                let len = parseInt(this.topWordLen);
+                this.wordData02 = this.db.getTopWords(this.curRoot.word,len);
+            },
+            removeFromWords(rowindex){
+                this.wordData02.splice(rowindex,1);
+            },            
+            saveJson() {
+                this.wordEx.roots[this.curRoot.word]=this.curRoot;                
+                this.wordEx.words[this.curRoot.word] = this.wordData02;
+                let db = {roots:[],words:[]};//数组对象,json不支持字典，转为数据转录
+                for(let key in this.wordEx.roots) {
+                    let root ={rootkey:key,word:this.wordEx.roots[key]}
+                    let item = {rootkey:key,topWoods:this.wordEx.words[key]};
+                    db.roots.push(root);
+                    db.words.push(item);
+                }
+
+                //console.log(db);
+                let str = JSON.stringify(db);
+                let _this = this;
+                //console.log(str);
+                fs.writeFile('./words.json', str, { 'flag': 'a' }, function(err) {
+                    if (err) {
+                        throw err;
+                    }else{
+                        _this.$alert('写入words.json成功');
+                    }
+                });
             }
-            
         },
         mounted() {
             //////////////////////////////////////////////////////////上下拖动
