@@ -102,7 +102,8 @@
                 let str = JSON.stringify(db);
                 let _this = this;
                 //console.log(str);
-                fs.writeFile('./words.json', str, { 'flag': 'a' }, function(err) {
+                // 'flag': 'a'添加 ，w写入
+                fs.writeFile('./words.json', str, { 'flag': 'w' }, function(err) {
                     if (err) {
                         throw err;
                     }else{
