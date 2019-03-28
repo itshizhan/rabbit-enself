@@ -42,16 +42,14 @@ export default class EnWordStudy{
             //console.log(root);
             let key = root.word;
             let words = this.allWords[key];
-            //console.log(words);
-            if(words){               
-                let rootLabel = root.meaning;
-                //console.log(`key=${key},words.length=${words.length}`)
-                this.setWordTree(words);
-                let tops = words.filter(x=>x.isTopParent);
-                let node = {word:rootLabel,children:tops};            
-                tree.push(node);
-            }
+            let rootLabel = root.meaning;
+            //console.log(`key=${key},words.length=${words.length}`)
+            this.setWordTree(words);
+            let tops = words.filter(x=>x.isTopParent==true);            
+            let node = {word:rootLabel,children:tops};            
+            tree.push(node);                       
         });
+        //console.log(tree);
         cb(tree);
     }
 
@@ -62,45 +60,64 @@ export default class EnWordStudy{
         while(wordList.length>ateCnt){
             let levels = wordList.filter(x=>x.splitCnt==keyLen);//取所有该拆分长度的单词
             levels.forEach(element => {
-                this.findParent(ateDict,element,(data)=>{
-                    data.label = data.word;
+                this.findParent(ateDict,element,(data)=>{                                
                     ateDict.push(data);//完成后都会将数据加到已处理库中,以后后面单词检查是否为自己的父根
                 });  
                 ateCnt ++;//每处理一个加1
-            }); 
+            });            
             keyLen ++;           
         }
     }
 
     findParent(ateDict,elWord,cb){
-        ateDict.forEach(bw => {
-            if(isParent(bw,elWord,0,0,true)){
+        elWord.isTopParent = true;//默认视为找不到父类
+        elWord.children=[];
+        if(ateDict.length==0)//最被并不基类
+        {
+            cb(elWord);
+            return;
+        }        
+        //按拆分的数量，从多到少排序。就是尽量找到最长的作为其父类
+        let sorted = ateDict.sort(this.descSortSplitLen); 
+        for(let i=0;i<ateDict.length;i++){
+            let bw= ateDict[i];
+            if(this.isParent(bw,elWord,0,0,true)){                
+                elWord.isTopParent = false;
                 bw.children.push(elWord);
-            }else{
-                elWord.isTopParent = true;
-                elWord.children=[];
+                break;//从一堆单词中找到父类，从中退出
             }
-            cb(elWord);        
-        });
+        }       
+        cb(elWord); 
+    }
+    //按拆分的数量，从多到少排序
+    descSortSplitLen(a,b){
+        if(a.splitCnt>b.splitCnt)
+            return -1;
+        if(a.splitCnt<b.splitCnt)
+            return 1;
+        else
+            return 0;
     }
 
     isParent(parent,testWord,pos,testPos,machfirst){
-        console.log(parent + " check for " + testWord + " testPos=" + testPos);
-        //return false;
-        //testWord的长度会比parent的长度长，
+        // if(parent.word=="stand" && testWord.word=="standard")
+        //     console.log(parent.word + " check for " + testWord.word + " testPos=" + testPos + " machfirst=" + machfirst);        
+        //testWord的长度会不一定比parent的长度长，
+        if(pos>=parent.splitWords.length)
+            return true;
+        if(testPos>=testWord.splitWords.length)
+            return false;
         let minLen = testWord.splitWords.length - parent.splitWords.length;
-        if(machfirst){//首位检查
+        if(machfirst){//首位检查,            
             if(pos+minLen > testWord.splitWords.length)
                 return false;            
-            if(parent.splitWords[pos].word==testWord.splitWords[testPos].word)
-                return isParent(parent,testWord,pos+1,testPos+1,false);
+            if(parent.splitWords[pos].word===testWord.splitWords[testPos].word)
+                return this.isParent(parent,testWord,pos+1,testPos+1,false);
             else
-            return isParent(parent,testWord,pos,testPos + 1,true);//还在找首个匹配的位置
+                return this.isParent(parent,testWord,pos,testPos + 1,true);//还在找首个匹配的位置
         }else{
-            if(pos>=parent.splitWords.length)
-                return true;
-            if(parent.splitWords[pos].word==testWord.splitWords[testPos].word)
-                return isParent(parent,testWord,pos+1,testPos+1,false);
+            if(parent.splitWords[pos].word===testWord.splitWords[testPos].word)
+                return this.isParent(parent,testWord,pos+1,testPos+1,false);
             else
                 return false;
         }
