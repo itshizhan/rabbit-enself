@@ -1,11 +1,10 @@
 <template>
     <div>
-        <el-tree
+        <el-button @click="saveJson">保存选择到文件</el-button>
+        <el-tree ref="tree" @node-click="checkClick"
   :data="dataTree"
   show-checkbox
-  node-key="id"
-  :default-expanded-keys="[2, 3]"
-  :default-checked-keys="[5]"
+  node-key="id"  
   :props="defaultProps">
 </el-tree>
     </div>
@@ -46,24 +45,34 @@
             },
             removeFromWords(rowindex){
                 this.wordData02.splice(rowindex,1);
+            },
+            checkClick(data){
+                console.log(data);
+            },         
+            saveJson(){
+                //let nodes = this.$refs.tree.getCheckedNodes();
+                // let nodes = this.$refs.tree.getCheckedKeys();
+                // console.log(nodes);
+                this.saveSelectedToJson();
             },            
-            saveJson() {
-                this.wordEx.roots[this.curRoot.word]=this.curRoot;                
-                this.wordEx.words[this.curRoot.word] = this.wordData02;
+            saveSelectedToJson() {                
                 let db = {roots:[],words:[]};//数组对象,json不支持字典，转为数据转录
-                for(let key in this.wordEx.roots) {
-                    let root ={rootkey:key,word:this.wordEx.roots[key]}
-                    let item = {rootkey:key,topWoods:this.wordEx.words[key]};
-                    db.roots.push(root);
-                    db.words.push(item);
-                }
-
+                let nodes = this.$refs.tree.getCheckedNodes();
+                nodes.forEach(nd => {
+                    if(nd.rootKey){
+                        let key = nd.rootKey;
+                        let root ={rootkey:key,word:{word:key,meaning:nd.word}}
+                        let item = {rootkey:key,topWoods:nd.children};
+                        db.roots.push(root);
+                        db.words.push(item);
+                    }
+                });               
                 //console.log(db);
                 let str = JSON.stringify(db);
                 let _this = this;
                 //console.log(str);
                 // 'flag': 'a'添加 ，w写入
-                fs.writeFile('./words.json', str, { 'flag': 'w' }, function(err) {
+                fs.writeFile('./wordtree.json', str, { 'flag': 'w' }, function(err) {
                     if (err) {
                         throw err;
                     }else{

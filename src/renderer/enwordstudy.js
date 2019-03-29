@@ -46,7 +46,7 @@ export default class EnWordStudy{
             //console.log(`key=${key},words.length=${words.length}`)
             this.setWordTree(words);
             let tops = words.filter(x=>x.isTopParent==true);            
-            let node = {word:rootLabel,children:tops};            
+            let node = {word:rootLabel,rootKey:key,children:tops};            
             tree.push(node);                       
         });
         //console.log(tree);
@@ -60,7 +60,7 @@ export default class EnWordStudy{
         while(wordList.length>ateCnt){
             let levels = wordList.filter(x=>x.splitCnt==keyLen);//取所有该拆分长度的单词
             levels.forEach(element => {
-                this.findParent(ateDict,element,(data)=>{                                
+                this.findParent(ateDict,element,(data)=>{                     
                     ateDict.push(data);//完成后都会将数据加到已处理库中,以后后面单词检查是否为自己的父根
                 });  
                 ateCnt ++;//每处理一个加1
@@ -78,9 +78,16 @@ export default class EnWordStudy{
             return;
         }        
         //按拆分的数量，从多到少排序。就是尽量找到最长的作为其父类
-        let sorted = ateDict.sort(this.descSortSplitLen); 
-        for(let i=0;i<ateDict.length;i++){
-            let bw= ateDict[i];
+        // let sorted = ateDict.sort(this.descSortSplitLen); 
+        // if(elWord.word=="unconvincing"){
+        //     console.log(sorted[0].word + "  total=" + sorted.length + "..." + sorted[0].splitCnt);
+        //     console.log(sorted); 
+        //     console.log(ateDict);   
+        // }
+        for(let i=0;i<ateDict.length;i++){            
+            let bw= ateDict[ateDict.length - i -1];
+            // if(elWord.word=="unconvincing")
+            //     console.log(`check ..${bw.word} split.cnt=${bw.splitCnt}`);
             if(this.isParent(bw,elWord,0,0,true)){                
                 elWord.isTopParent = false;
                 bw.children.push(elWord);
@@ -91,33 +98,45 @@ export default class EnWordStudy{
     }
     //按拆分的数量，从多到少排序
     descSortSplitLen(a,b){
-        if(a.splitCnt>b.splitCnt)
-            return -1;
-        if(a.splitCnt<b.splitCnt)
-            return 1;
+        let flag = 1;
+        // if(a.splitCnt>b.splitCnt)
+        //     return -flag;
+        // if(a.splitCnt<b.splitCnt)
+        //     return flag;
+        if(a.word.length>a.word.length)
+            return -flag
+        if(a.word.length<a.word.length)
+            return flag;
         else
             return 0;
     }
 
     isParent(parent,testWord,pos,testPos,machfirst){
-        // if(parent.word=="stand" && testWord.word=="standard")
-        //     console.log(parent.word + " check for " + testWord.word + " testPos=" + testPos + " machfirst=" + machfirst);        
+        // if( parent.word=="convincing" && testWord.word=="unconvincing") //parent.word=="convincing" && 
+        //     console.log(parent.word + " check for " + testWord.word + " testPos=" + testPos + " pos=" + pos + " machfirst=" + machfirst);        
         //testWord的长度会不一定比parent的长度长，
-        
+        if(pos>=parent.splitWords.length){//第一个位置未能匹配，到了末尾视为失败
+            if(machfirst)
+                return false;//parent检查完毕，但没有匹配一个拆分部分
+            else
+                return true;   //已匹配到了第一个位置的，到了末尾视为成功匹配  
+        }
         if(testPos>=testWord.splitWords.length)
             return false;
+
         let minLen = testWord.splitWords.length - parent.splitWords.length;
-        if(machfirst){//首位检查, 
-            if(pos>=parent.splitWords.length)//第一个位置未能匹配，到了末尾视为失败
-                return false;           
+        if(machfirst){//首位检查,             
+            if(testPos>=testWord.splitWords.length)
+                return false;
             if(pos+minLen > testWord.splitWords.length)
                 return false;            
             if(parent.splitWords[pos].word===testWord.splitWords[testPos].word)
                 return this.isParent(parent,testWord,pos+1,testPos+1,false);
             else
                 return this.isParent(parent,testWord,pos,testPos + 1,true);//还在找首个匹配的位置
-        }else{
-            if(pos>=parent.splitWords.length)//已匹配到了第一个位置的，到了末尾视为成功匹配
+        }else{            
+            //判断是否最后一位，如果最后一样是-e结尾，不作判断，直接返回真
+            if(pos==parent.splitWords.length-1 && parent.splitWords[pos].word=="-e")
                 return true;
             if(parent.splitWords[pos].word===testWord.splitWords[testPos].word)
                 return this.isParent(parent,testWord,pos+1,testPos+1,false);
