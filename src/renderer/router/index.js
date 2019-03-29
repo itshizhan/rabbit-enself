@@ -38,7 +38,13 @@ export default new Router({
                     path:'/enwordstudy',
                     component: resolve => require(['../components/page/EnWordStudy.vue'], resolve),
                     meta: { title: '词根整理' }
+                },
+                {
+                    path:'/enwordtree',
+                    component: resolve => require(['../components/page/EnWordTree.vue'], resolve),
+                    meta: { title: '词根整理' }
                 }
+
             ]
         },        
         {

@@ -57,6 +57,11 @@
                         index: 'enwordstudy',
                         title: '单词拆分'
                     }
+                    ,{
+                        icon: 'el-icon-upload',
+                        index: 'enwordtree',
+                        title: '自动层级'
+                    }
                 ]
             }
         },
