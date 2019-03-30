@@ -11,10 +11,9 @@ export default class EnWordLast{
 
     getLast(word,cb){
         if(this.words[word]){
-            cb(this.words[word]);
-            return true;
+            cb({isFind:true,preWord:this.words[word]});            
         }else{
-            return false;
+            cb({isFind:false,preWord:{}});
         }
     }
 
