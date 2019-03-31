@@ -1,7 +1,7 @@
 <template>
     <div>
         <el-button @click="saveJson">保存选择到文件</el-button>
-        <el-tree ref="tree" @node-click="checkClick"
+        <el-tree ref="tree" 
   :data="dataTree"
   show-checkbox
   node-key="id"  
@@ -24,31 +24,34 @@
             }
         },
         created(){
+            // let aa = [{word:"hbc",index:0},{word:"bcddef",index:1},{word:"iij",index:2},{word:"a",index:3},{word:"v",index:4}];
+            // //let bb = aa.sort((a,b)=>a.word>b.word);
+            // let bb = aa.sort(this.sortedTree);
+            // console.log(bb);
             this.db = new EnWordStudy();
             let _this = this;
             this.db.init((data)=>{
                 this.db.buildTree((tree)=>{
-                    this.dataTree = tree;
+                    let sortedTree= tree.sort(this.sortedTree);
+                    this.dataTree = sortedTree;
                 });                         
             });
             
         } ,
+        
         beforeDestroy(){
             this.db.closeDb();
         },
         methods:{
-            topDblClick(row, column, event){
-                //console.log(row);
-                this.curRoot = row;
-                let len = parseInt(this.topWordLen);
-                this.wordData02 = this.db.getTopWords(this.curRoot.word,len);
+            sortedTree(a,b){
+                //console.log(`${a.word}>${b.word}=${a.word>b.word}`);
+                if(a.word>b.word)
+                    return 1;
+                if(a.word<b.word)
+                    return -1;
+                else
+                    return 0;
             },
-            removeFromWords(rowindex){
-                this.wordData02.splice(rowindex,1);
-            },
-            checkClick(data){
-                console.log(data);
-            },         
             saveJson(){
                 //let nodes = this.$refs.tree.getCheckedNodes();
                 // let nodes = this.$refs.tree.getCheckedKeys();

@@ -3,14 +3,20 @@ import EnWordsDb from "./enwords";
 
 export default class EnWordStudy{    
     constructor (){
-        this.roots = [];//词根
+        this.roots = [];//词根字典
+        this.allWordRoots = [];//分析单词的词根
         this.allWords = [];//词根下所有单词。key=词根，value是单词及其解释        
-        this.db = new EnWordsDb();    }
+        this.db = new EnWordsDb();  
+    }
 
     async init(cb){
         let wordMasters = await this.db.getTableAll("wordMaster");
         let wordSplit = await this.db.getTableAll("wordSplit");
-        
+        let wordBases = await this.db.getTableAll("wordbase");
+        wordBases.forEach(element => {
+            let rootKey = `100-${element.id}`;
+            this.roots[rootKey] = element;
+        });
         let index = 0;
         wordMasters.forEach(wm => {            
             let sps = wordSplit.filter(x=>x.fromword==wm.word);//某一单词的所有拆分
@@ -21,24 +27,28 @@ export default class EnWordStudy{
             let meaning = '';
             mts.forEach(mt => {            
                 root = mt.word;
-                rootKey = mt.locat;
-                meaning = mt.meaning;
-                if(!this.allWords[rootKey]){
+                rootKey = mt.locat;     
+                //准备字根单词节点。只有字根表定义的才显示          
+                if(!this.allWords[rootKey] && this.roots[rootKey]){
                     index ++;
                     this.allWords[rootKey] = [];  
-                    this.roots.push({index:index,word:rootKey,meaning:meaning});
+                    meaning = `${this.roots[rootKey].word} ${this.roots[rootKey].meaning}`
+                    this.allWordRoots.push({index:index,word:rootKey,meaning:meaning});
                 }   
-                wm.splitCnt = sps.length;
-                wm.splitWords = sps;
-                this.allWords[rootKey].push(wm);
+                //字根单词节点准备好了才添加
+                if(this.allWords[rootKey]){
+                    wm.splitCnt = sps.length;
+                    wm.splitWords = sps;
+                    this.allWords[rootKey].push(wm);
+                }
             });            
         });       
-        cb(this.roots);
+        cb(this.allWordRoots);
     }
 
     async buildTree(cb){
         let tree = [];        
-        this.roots.forEach(root => {
+        this.allWordRoots.forEach(root => {
             //console.log(root);
             let key = root.word;
             let words = this.allWords[key];
