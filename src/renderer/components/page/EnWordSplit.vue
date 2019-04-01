@@ -103,7 +103,7 @@
     import EnWordLast from "../../enwordlast";   
     //var Mousetrap = require('mousetrap');
     import axios from 'axios';
-    import { constants } from 'http2';
+    //import { constants } from 'http2';
 import { TextDecoder } from 'util';
     export default {         
         data(){
@@ -233,9 +233,10 @@ import { TextDecoder } from 'util';
             editPre:function(row){
                 this.lastPreMeaning = {};//清空lastPreMeaning
                 this.lastPreWord.getLast(row.word,(data)=>{
-                    this.lastPreMeaning = data;
-                });
-                this.dialogEditObj=row;                
+                    if(data.isFind)
+                        this.lastPreMeaning = data.preWord;                   
+                });                             
+                this.dialogEditObj=row;
                 this.dialogPefixVisible=true;
                 this.$nextTick(function(){
                     this.$refs.firstPreInput.$el.querySelector('input').focus();
@@ -414,19 +415,24 @@ import { TextDecoder } from 'util';
                 let locat ='-';                  
                 //取意思
                 let isLast =this.lastPreWord.getLast(txt,(data)=>{
-                    meaning = data.meaning;
-                    locat = data.locat;
-                    partword = data.partWord;
+                    console.log(data);
+                    if(data.isFind){
+                        meaning = data.preWord.meaning;
+                        locat = data.preWord.locat;
+                        partword = data.preWord.partWord;
+                    }else{
+                        this.wordDb.matchBase(txt,(err,data)=>{                                        
+                            if(data){                        
+                                word = data.word;
+                                meaning = data.meaning;
+                                locat=data.locat;                        
+                            }                        
+                        });  
+                    }
                 });
 
                 if(!isLast){
-                    this.wordDb.matchBase(txt,(err,data)=>{                                        
-                        if(data){                        
-                            word = data.word;
-                            meaning = data.meaning;
-                            locat=data.locat;                        
-                        }                        
-                    });      
+                        
                 }    
                 let row = {
                     word:word,
@@ -454,6 +460,10 @@ import { TextDecoder } from 'util';
                     pronun:this.pronun,
                     memo:this.enWordDemo
                 };
+                //有部分单词会没有解释，使用说明的内容作为解释
+                if(this.wordMaster.meaning.trim().length==0){
+                    this.wordMaster.meaning = this.wordMaster.memo;
+                }
                 //console.log(this.tableData);
                 this.wordDb.saveSplit(word,this.tableData,(err,data)=>{
                     if(err){
@@ -462,6 +472,7 @@ import { TextDecoder } from 'util';
                     }else{
                         this.downMp3(this.enWord);
                         let row ={word:this.enWord,meaning:this.wordMaster.meaning};
+                        //添加到下方列表
                         this.wordData.push(row);
                     }
                     this.newWordCheck();   

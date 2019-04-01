@@ -68,6 +68,11 @@ export default class EnWordsDb{
         }
         return arr;
     }
+    /**
+     * 从之前处理的单词中查找。没有的话返回一个新的ID=-1的对象
+     * UI请保留些对象的引用，并直接修改这个对象。在调用saveWordSplit时，会保存到数据库
+     * @param {string} word 
+     */  
     getWordMaster(word){
         if(this.dictWords[word]){
             return this.dictWords[word];
@@ -151,6 +156,12 @@ export default class EnWordsDb{
         console.log(sql);
         this.db.run(sql,paras,cb);        
     }
+    /**
+     * 保存拆分，并检查wordData中的fromWord是否存在于wordMaster，不存在添加记录，
+     * @param {Object} wordData 
+     * @param {Array} spData 
+     * @param {Function} cb 
+     */
     saveSplit(wordData,spData,cb){
         let fromword = wordData.word;
         //检查是否保存过wordMaster
@@ -205,6 +216,11 @@ export default class EnWordsDb{
         else
             return false;
     }
+    /**
+     * 从10多万单词中找这个单词
+     * @param {*} word 
+     * @param {*} cb 回调函数
+     */
     getWord(word,cb){
         //let find = word.replace(/-/g,'%');//将所有-换为%
         //console.log(find);
