@@ -58,9 +58,22 @@ export default class EnWordStudy{
             let rootLabel = root.meaning;
             //console.log(`key=${key},words.length=${words.length}`)
             this.setWordTree(words);
-            let tops = words.filter(x=>x.isTopParent==true);            
-            let node = {word:rootLabel,rootKey:key,children:tops};            
-            tree.push(node);                       
+            let tops = words.filter(x=>x.isTopParent==true); 
+            //检查是否存在父词根
+            if(this.roots[key].parentid>0){
+                let parentKey = `100-${this.roots[key].parentid}`
+                let find = tree.filter(x=>x.rootKey==parentKey);
+                if(find && find.length>0){
+                    tops.forEach(one => {
+                        find[0].children.push(one);//作为子节点添加到父树上
+                    });
+                }else{
+                    console.log("未能找到父节点" + parentKey);
+                }
+            }else{
+                let node = {word:rootLabel,rootKey:key,children:tops}; 
+                tree.push(node);     
+            }                  
         });
         //console.log(tree);
         cb(tree);

@@ -60,12 +60,16 @@
             
             </el-main>
         </el-container>          
-        <el-dialog v-dialogDrag title="编辑" :visible.sync="dialogFormVisible">  
+        <el-dialog v-dialogDrag title="新的词根" :visible.sync="dialogFormVisible" v-enterToNext>  
             <el-form>
                 <el-form-item>         
-                <el-input v-model="newBase" size="small" placeholder="请录入新的单词" ref="firstInput" @keyup.enter.native="nextToMean" ></el-input>
+                <el-input v-model="newBase" size="small" placeholder="请录入新的单词" ref="firstInput"></el-input>
                </el-form-item> <el-form-item>
                <el-input v-model="newMeaning" type="textarea" :autosize="{ minRows: 3, maxRows: 6}" placeholder="请录入新的意思" ref="nextInput" @keyup.enter.native="checkWord" ></el-input>
+               </el-form-item>  <el-form-item>
+               <el-input v-model="newRootParent" placeholder="请录入父词根" ></el-input>
+               {{rootParent.meaning}}
+               <el-button @click="resetRootParent">重置</el-button>
                </el-form-item> 
             </el-form>
             <div slot="footer" class="dialog-footer">
@@ -114,6 +118,8 @@ import { TextDecoder } from 'util';
                 pronun:'',
                 newBase:'',
                 newMeaning:'',
+                newRootParent:'',
+                rootParent:{id:0,meaning:''},
                 lastPreMeaning:{},
                 searchResult:'',
                 dialogFormVisible:false,  
@@ -164,6 +170,17 @@ import { TextDecoder } from 'util';
                         }      
                     });
                 }                
+            },
+            newRootParent(val){
+                console.log("newpar..." + val);
+                let _this = this;
+                if(val){
+                    this.wordDb.matchBase(val,(err,data)=>{  
+                        if(data){                        
+                            this.rootParent = data;                        
+                            }                        
+                        });  
+                }
             }
         },
         methods:{
@@ -242,11 +259,16 @@ import { TextDecoder } from 'util';
                     this.$refs.firstPreInput.$el.querySelector('input').focus();
                 });
             },
+            resetRootParent(){
+                this.newRootParent = ''
+                this.rootParent = {id:0,meaning:''}
+            },
             checkWord:function(){
                 //保存root
                 let data = {
                     word:this.newBase,
-                    meaning:this.newMeaning,                    
+                    meaning:this.newMeaning, 
+                    parentid:this.rootParent.id,                  
                 };
 
                 this.wordDb.insertEntity("wordbase",data,(err,data)=>{
@@ -310,16 +332,29 @@ import { TextDecoder } from 'util';
                 }
                 //console.log('set...isRoot=' + isRoot);
                 row.word = word;
-                this.wordDb.matchBase(word,(err,data)=>{                    
-                    let meaning = '';
-                    let locat = '';
-                    if(data){
-                        meaning = data.meaning;
-                        locat = data.locat;
+                //取意思
+                let meaning = '';
+                let locat = '';
+                let partword='';
+                let isLast =this.lastPreWord.getLast(word,(data)=>{
+                    console.log(data);
+                    if(data.isFind){
+                        meaning = data.preWord.meaning;
+                        locat = data.preWord.locat;
+                        partword = data.preWord.partWord;
+                    }else{
+                        this.wordDb.matchBase(word,(err,data)=>{
+                            if(data){
+                                meaning = data.meaning;
+                                locat = data.locat;
+                            }
+                                        
+                        });  
                     }
-                    row.meaning=meaning;      
-                    row.locat = locat;              
-                });                
+                });   
+                row.meaning=meaning;      
+                row.locat = locat;   
+                row.partword = partword;          
                 if(isRoot)
                     this.resetEnWord();
             },
@@ -415,7 +450,7 @@ import { TextDecoder } from 'util';
                 let locat ='-';                  
                 //取意思
                 let isLast =this.lastPreWord.getLast(txt,(data)=>{
-                    console.log(data);
+                    //console.log(data);
                     if(data.isFind){
                         meaning = data.preWord.meaning;
                         locat = data.preWord.locat;
