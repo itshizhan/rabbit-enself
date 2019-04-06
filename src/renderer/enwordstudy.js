@@ -71,7 +71,7 @@ export default class EnWordStudy{
                     console.log("未能找到父节点" + parentKey);
                 }
             }else{
-                let node = {word:rootLabel,rootKey:key,children:tops}; 
+                let node = {id:key,word:rootLabel,rootKey:key,children:tops}; 
                 tree.push(node);     
             }                  
         });
