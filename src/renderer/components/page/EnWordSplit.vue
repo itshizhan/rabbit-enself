@@ -2,25 +2,25 @@
     <div>
         <el-container>
         <el-header height="50" style="padding: 5px;">
-       <div style="width:550px;float:left;"> 
-            <div style="width:500px;float:left;"> 
-                <h1 style="font-size:40px" @mouseup="getSelect2">{{enWord}}</h1> 
+       <div style="width:500px;float:left;"> 
+            <div style="width:450px;float:left;"> 
+                <h2 style="font-size:40px">{{enWord}}</h2> 
                 <h3>{{wordMaster.pronunciation}} </h3>
-                <h2>{{wordMaster.meaning}} </h2>
+                <h3>{{wordMaster.meaning}} </h3>
             </div>        
             <div style="float:left;">
                 <h2>{{rootIndex}}</h2>
             </div>
        </div>
-        <div style="width:400px;float:right;"> 
-            <div style="width:250px margin-left:50px"> 
+        <div style="width:300px;float:right;"> 
+            <div style="width:220px margin-left:50px"> 
             <el-input v-model="inputStr" size="medium" @keydown.native="txtStrInputHandle" ref="txtInputStr"></el-input>
             </div>
-            <div style="width:400px;margin-top:10px;">
-                <el-button @click="newWordCheck">重新开始</el-button>           
+            <div style="width:300px;margin-top:10px;">
+                <el-button @click="newWordCheck">清空</el-button>           
                 <el-button @click="downMeaning">查字典</el-button>               
                 <el-button @click="editNewRoot">新字根</el-button>                               
-                <el-button @click="saveWordSplit">保存拆分</el-button>                              
+                <el-button @click="saveWordSplit">保存</el-button>                              
             </div>
         </div>
       </el-header>
@@ -29,12 +29,12 @@
                 <el-table-column v-for="col in columns" :key="col.field" :prop="col.field" :label="col.title" :width="col.width" >
   
                 </el-table-column>
-                <el-table-column fixed="right" label="操作" width="320">
+                <el-table-column fixed="right" label="操作" width="220">
                     <template slot-scope="scope">
-                        <el-button @click="setPostion(scope.row,'前缀')" type="text" size="small">设为前缀</el-button>
-                        <el-button @click="setPostion(scope.row,'字根')" type="text" size="small">设为字根</el-button>
-                        <el-button @click="setPostion(scope.row,'后缀')" type="text" size="small">设为后缀</el-button>
-                        <el-button @click="editPre(scope.row)" type="text" size="small">后缀/修改</el-button>
+                        <el-button @click="setPostion(scope.row,'前缀')" type="text" size="small">前缀</el-button>
+                        <el-button @click="setPostion(scope.row,'字根')" type="text" size="small">字根</el-button>
+                        <el-button @click="setPostion(scope.row,'后缀')" type="text" size="small">后缀</el-button>
+                        <el-button @click="editPre(scope.row)" type="text" size="small">修改</el-button>
                         <el-button @click="removeFromSp(scope.$index)" type="text" size="small">删除</el-button>
                     </template>
                 </el-table-column>
@@ -430,18 +430,19 @@ import { TextDecoder } from 'util';
                     wordBase = txt;
                     partword = arr[1];                    
                 }
-                if(hasRoot){                    
-                    txt = "-" + txt;
-                }else{                    
-                    if(this.wordDb.isRoot(txt)){
-                        isroot =1;
-                        this.rootIndex = this.enWord.length;
+                
+                if(this.wordDb.isRoot(txt)){
+                    isroot =1;
+                    this.rootIndex = this.enWord.length;
+                }else{
+                    if(txt.indexOf('-')>-1){
+                        wordBase = txt.replace(/-/g,'');//清空所有“-”
                     }else{
-                         if(txt.indexOf('-')>-1){
-                             wordBase = txt.replace(/-/g,'');//清空所有“-”
-                         }else{
-                             txt = txt +'-';
-                         }
+                        if(hasRoot){                    
+                            txt = "-" + txt;
+                        }else{
+                            txt = txt +'-';
+                        }
                     }
                 }
                 

@@ -52,7 +52,7 @@ export default class EnWordsDb{
             data.forEach(row => {                
                 this.dictWords[row.word] =row;                
             });               
-            let last = this.getLastMaster(2,data);
+            let last = this.getLastMaster(4,data);
             //console.log(last);
             cb(last);         
         });
