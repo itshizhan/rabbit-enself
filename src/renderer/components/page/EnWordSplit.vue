@@ -214,23 +214,20 @@ import { TextDecoder } from 'util';
                 let tmp = '';
                 let findRoot = false;
                 let misWord = '';//处理结尾带忽略字母的
-                this.tableData.forEach(word => {                    
+                let index = 0;
+                this.tableData.forEach(word => {      
+                    index ++;              
                     if(word.partWord){
-                        tmp += word.partWord;
-                        misWord = word.wordbase;
-                    }else{
-                        misWord = '';
+                        if(index==this.tableData.length && word.partWord.length<word.wordbase.length)
+                             tmp += word.wordbase;
+                        else
+                            tmp += word.partWord;                        
+                    }else{                       
                         tmp += word.wordbase;
                     }
                     if(word.isroot==1)
                         findRoot = true;
-                });
-                //如果最后一位还忽略字母，显示这个忽略的末位
-                if(misWord.length>0){
-                    //console.log(misWord);
-                    //取最后的字母                    
-                    tmp += misWord.substring(misWord.length-1);
-                }
+                });               
                 //console.log('reset enword..' + findRoot);
                 if(!findRoot)
                     this.rootIndex = -1;
