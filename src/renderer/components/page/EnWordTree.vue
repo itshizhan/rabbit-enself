@@ -69,16 +69,35 @@
                 // let nodes = this.$refs.tree.getCheckedKeys();
                 // console.log(nodes);
                 this.saveSelectedToJson();
-            },            
-            saveSelectedToJson() {                
+            },         
+            buildChilds(ndList){
+                let childs = [];
+                ndList.forEach(el => {
+                    let parts = [];
+                    el.splitWords.forEach(sp => {
+                        parts.push({sw:sp.word,sm:sp.meaning});
+                    });
+                    //获取词频
+                    let freq = this.db.getWordFreqVal(el.word,30000);
+                    let obj = {w:el.word,p:el.pronunciation,e:el.meaning,ps:parts,o:el.memo,f:freq};
+                    if(el.children){
+                        obj.exs = this.buildChilds(el.children);
+                    }
+                    childs.push(obj);
+                });
+                return childs;
+            },
+            saveSelectedToJson() {       
+                let _this = this;         
                 let db = {roots:[],words:[]};//数组对象,json不支持字典，转为数据转录
                 let nodes = this.$refs.tree.getCheckedNodes();
                 let arrKeys = [];
                 nodes.forEach(nd => {
                     if(nd.rootKey){
                         let key = nd.rootKey;
-                        let root ={rootkey:key,word:{word:key,meaning:nd.word}}
-                        let item = {rootkey:key,topWoods:nd.children};
+                        let root ={root:key,word:{word:key,mean:nd.word}}
+                        let childs = _this.buildChilds(nd.children);
+                        let item = {root:key,words:childs};
                         db.roots.push(root);
                         db.words.push(item);
                         arrKeys.push(key);
@@ -87,7 +106,7 @@
                 //this.$store.dispatch('SET_EXPORT_TREE', db.roots)           
                 localStorage.setItem('LAST_SELECTED_EXPORT_TREE',arrKeys.join(','));
                 let str = JSON.stringify(db);
-                let _this = this;
+                
                 //console.log(str);
                 // 'flag': 'a'添加 ，w写入
                 fs.writeFile('./wordtree.json', str, { 'flag': 'w' }, function(err) {
