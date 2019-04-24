@@ -34,6 +34,9 @@
                 this.db.buildTree((tree)=>{
                     let sortedTree= tree.sort(this.sortedTree);
                     this.dataTree = sortedTree;
+                    this.$nextTick(function(){
+                        this.selectExportNode();
+                    });
                 });                         
             });
             
@@ -43,6 +46,15 @@
             this.db.closeDb();
         },
         methods:{
+            selectExportNode(){
+                //let exp = this.$store.state.words.exportTree;
+                let exp = localStorage.getItem('LAST_SELECTED_EXPORT_TREE');
+                let arrKeys = exp.split(',')
+                //console.log(this.$refs.tree);
+                arrKeys.forEach(nd => {                    
+                    this.$refs.tree.setChecked(nd,true,false);
+                });                
+            },
             sortedTree(a,b){
                 //console.log(`${a.word}>${b.word}=${a.word>b.word}`);
                 if(a.word>b.word)
@@ -61,6 +73,7 @@
             saveSelectedToJson() {                
                 let db = {roots:[],words:[]};//数组对象,json不支持字典，转为数据转录
                 let nodes = this.$refs.tree.getCheckedNodes();
+                let arrKeys = [];
                 nodes.forEach(nd => {
                     if(nd.rootKey){
                         let key = nd.rootKey;
@@ -68,9 +81,11 @@
                         let item = {rootkey:key,topWoods:nd.children};
                         db.roots.push(root);
                         db.words.push(item);
+                        arrKeys.push(key);
                     }
-                });               
-                //console.log(db);
+                });    
+                //this.$store.dispatch('SET_EXPORT_TREE', db.roots)           
+                localStorage.setItem('LAST_SELECTED_EXPORT_TREE',arrKeys.join(','));
                 let str = JSON.stringify(db);
                 let _this = this;
                 //console.log(str);

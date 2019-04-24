@@ -2,25 +2,25 @@
     <div>
         <el-container>
         <el-header height="50" style="padding: 5px;">
-       <div style="width:550px;float:left;"> 
-            <div style="width:500px;float:left;"> 
-                <h1 style="font-size:40px" @mouseup="getSelect2">{{enWord}}</h1> 
+       <div style="width:500px;float:left;"> 
+            <div style="width:450px;float:left;"> 
+                <h2 style="font-size:40px">{{enWord}}</h2> 
                 <h3>{{wordMaster.pronunciation}} </h3>
-                <h2>{{wordMaster.meaning}} </h2>
+                <h3>{{wordMaster.meaning}} </h3>
             </div>        
             <div style="float:left;">
                 <h2>{{rootIndex}}</h2>
             </div>
        </div>
-        <div style="width:400px;float:right;"> 
-            <div style="width:250px margin-left:50px"> 
+        <div style="width:300px;float:right;"> 
+            <div style="width:220px margin-left:50px"> 
             <el-input v-model="inputStr" size="medium" @keydown.native="txtStrInputHandle" ref="txtInputStr"></el-input>
             </div>
-            <div style="width:400px;margin-top:10px;">
-                <el-button @click="newWordCheck">重新开始</el-button>           
+            <div style="width:300px;margin-top:10px;">
+                <el-button @click="newWordCheck">清空</el-button>           
                 <el-button @click="downMeaning">查字典</el-button>               
                 <el-button @click="editNewRoot">新字根</el-button>                               
-                <el-button @click="saveWordSplit">保存拆分</el-button>                              
+                <el-button @click="saveWordSplit">保存</el-button>                              
             </div>
         </div>
       </el-header>
@@ -29,12 +29,12 @@
                 <el-table-column v-for="col in columns" :key="col.field" :prop="col.field" :label="col.title" :width="col.width" >
   
                 </el-table-column>
-                <el-table-column fixed="right" label="操作" width="320">
+                <el-table-column fixed="right" label="操作" width="220">
                     <template slot-scope="scope">
-                        <el-button @click="setPostion(scope.row,'前缀')" type="text" size="small">设为前缀</el-button>
-                        <el-button @click="setPostion(scope.row,'字根')" type="text" size="small">设为字根</el-button>
-                        <el-button @click="setPostion(scope.row,'后缀')" type="text" size="small">设为后缀</el-button>
-                        <el-button @click="editPre(scope.row)" type="text" size="small">后缀/修改</el-button>
+                        <el-button @click="setPostion(scope.row,'前缀')" type="text" size="small">前缀</el-button>
+                        <el-button @click="setPostion(scope.row,'字根')" type="text" size="small">字根</el-button>
+                        <el-button @click="setPostion(scope.row,'后缀')" type="text" size="small">后缀</el-button>
+                        <el-button @click="editPre(scope.row)" type="text" size="small">修改</el-button>
                         <el-button @click="removeFromSp(scope.$index)" type="text" size="small">删除</el-button>
                     </template>
                 </el-table-column>
@@ -60,12 +60,16 @@
             
             </el-main>
         </el-container>          
-        <el-dialog v-dialogDrag title="编辑" :visible.sync="dialogFormVisible">  
+        <el-dialog v-dialogDrag title="新的词根" :visible.sync="dialogFormVisible" v-enterToNext>  
             <el-form>
                 <el-form-item>         
-                <el-input v-model="newBase" size="small" placeholder="请录入新的单词" ref="firstInput" @keyup.enter.native="nextToMean" ></el-input>
+                <el-input v-model="newBase" size="small" placeholder="请录入新的单词" ref="firstInput"></el-input>
                </el-form-item> <el-form-item>
                <el-input v-model="newMeaning" type="textarea" :autosize="{ minRows: 3, maxRows: 6}" placeholder="请录入新的意思" ref="nextInput" @keyup.enter.native="checkWord" ></el-input>
+               </el-form-item>  <el-form-item>
+               <el-input v-model="newRootParent" placeholder="请录入父词根" ></el-input>
+               {{rootParent.meaning}}
+               <el-button @click="resetRootParent">重置</el-button>
                </el-form-item> 
             </el-form>
             <div slot="footer" class="dialog-footer">
@@ -114,6 +118,8 @@ import { TextDecoder } from 'util';
                 pronun:'',
                 newBase:'',
                 newMeaning:'',
+                newRootParent:'',
+                rootParent:{id:0,meaning:''},
                 lastPreMeaning:{},
                 searchResult:'',
                 dialogFormVisible:false,  
@@ -164,6 +170,17 @@ import { TextDecoder } from 'util';
                         }      
                     });
                 }                
+            },
+            newRootParent(val){
+                console.log("newpar..." + val);
+                let _this = this;
+                if(val){
+                    this.wordDb.matchBase(val,(err,data)=>{  
+                        if(data){                        
+                            this.rootParent = data;                        
+                            }                        
+                        });  
+                }
             }
         },
         methods:{
@@ -197,23 +214,20 @@ import { TextDecoder } from 'util';
                 let tmp = '';
                 let findRoot = false;
                 let misWord = '';//处理结尾带忽略字母的
-                this.tableData.forEach(word => {                    
+                let index = 0;
+                this.tableData.forEach(word => {      
+                    index ++;              
                     if(word.partWord){
-                        tmp += word.partWord;
-                        misWord = word.wordbase;
-                    }else{
-                        misWord = '';
+                        if(index==this.tableData.length && word.partWord.length<word.wordbase.length)
+                             tmp += word.wordbase;
+                        else
+                            tmp += word.partWord;                        
+                    }else{                       
                         tmp += word.wordbase;
                     }
                     if(word.isroot==1)
                         findRoot = true;
-                });
-                //如果最后一位还忽略字母，显示这个忽略的末位
-                if(misWord.length>0){
-                    //console.log(misWord);
-                    //取最后的字母                    
-                    tmp += misWord.substring(misWord.length-1);
-                }
+                });               
                 //console.log('reset enword..' + findRoot);
                 if(!findRoot)
                     this.rootIndex = -1;
@@ -242,11 +256,16 @@ import { TextDecoder } from 'util';
                     this.$refs.firstPreInput.$el.querySelector('input').focus();
                 });
             },
+            resetRootParent(){
+                this.newRootParent = ''
+                this.rootParent = {id:0,meaning:''}
+            },
             checkWord:function(){
                 //保存root
                 let data = {
                     word:this.newBase,
-                    meaning:this.newMeaning,                    
+                    meaning:this.newMeaning, 
+                    parentid:this.rootParent.id,                  
                 };
 
                 this.wordDb.insertEntity("wordbase",data,(err,data)=>{
@@ -310,16 +329,29 @@ import { TextDecoder } from 'util';
                 }
                 //console.log('set...isRoot=' + isRoot);
                 row.word = word;
-                this.wordDb.matchBase(word,(err,data)=>{                    
-                    let meaning = '';
-                    let locat = '';
-                    if(data){
-                        meaning = data.meaning;
-                        locat = data.locat;
+                //取意思
+                let meaning = '';
+                let locat = '';
+                let partword='';
+                let isLast =this.lastPreWord.getLast(word,(data)=>{
+                    console.log(data);
+                    if(data.isFind){
+                        meaning = data.preWord.meaning;
+                        locat = data.preWord.locat;
+                        partword = data.preWord.partWord;
+                    }else{
+                        this.wordDb.matchBase(word,(err,data)=>{
+                            if(data){
+                                meaning = data.meaning;
+                                locat = data.locat;
+                            }
+                                        
+                        });  
                     }
-                    row.meaning=meaning;      
-                    row.locat = locat;              
-                });                
+                });   
+                row.meaning=meaning;      
+                row.locat = locat;   
+                row.partword = partword;          
                 if(isRoot)
                     this.resetEnWord();
             },
@@ -395,18 +427,19 @@ import { TextDecoder } from 'util';
                     wordBase = txt;
                     partword = arr[1];                    
                 }
-                if(hasRoot){                    
-                    txt = "-" + txt;
-                }else{                    
-                    if(this.wordDb.isRoot(txt)){
-                        isroot =1;
-                        this.rootIndex = this.enWord.length;
+                
+                if(this.wordDb.isRoot(txt)){
+                    isroot =1;
+                    this.rootIndex = this.enWord.length;
+                }else{
+                    if(txt.indexOf('-')>-1){
+                        wordBase = txt.replace(/-/g,'');//清空所有“-”
                     }else{
-                         if(txt.indexOf('-')>-1){
-                             wordBase = txt.replace(/-/g,'');//清空所有“-”
-                         }else{
-                             txt = txt +'-';
-                         }
+                        if(hasRoot){                    
+                            txt = "-" + txt;
+                        }else{
+                            txt = txt +'-';
+                        }
                     }
                 }
                 
@@ -415,7 +448,7 @@ import { TextDecoder } from 'util';
                 let locat ='-';                  
                 //取意思
                 let isLast =this.lastPreWord.getLast(txt,(data)=>{
-                    console.log(data);
+                    //console.log(data);
                     if(data.isFind){
                         meaning = data.preWord.meaning;
                         locat = data.preWord.locat;

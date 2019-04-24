@@ -30,6 +30,7 @@ export default class EnWordsDb{
                     this.buildWordKey(word,(key)=>{                        
                         let locat = `${row.pos}-${row.id}`;                        
                         this.dictPieces[key] ={
+                            id:row.id,
                             word:key,
                             meaning: row.word + " " + meaning,
                             locat:locat
@@ -51,7 +52,7 @@ export default class EnWordsDb{
             data.forEach(row => {                
                 this.dictWords[row.word] =row;                
             });               
-            let last = this.getLastMaster(2,data);
+            let last = this.getLastMaster(4,data);
             //console.log(last);
             cb(last);         
         });

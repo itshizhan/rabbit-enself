@@ -38,6 +38,9 @@ export default class EnWordStudy{
                 //字根单词节点准备好了才添加
                 if(this.allWords[rootKey]){
                     wm.splitCnt = sps.length;
+                    // //检查最后一位是否-e，是不的话，splitCnt减一
+                    // if(sps[sps.length-1].word=="-e")
+                    //     wm.splitCnt --;
                     wm.splitWords = sps;
                     this.allWords[rootKey].push(wm);
                 }
@@ -55,9 +58,22 @@ export default class EnWordStudy{
             let rootLabel = root.meaning;
             //console.log(`key=${key},words.length=${words.length}`)
             this.setWordTree(words);
-            let tops = words.filter(x=>x.isTopParent==true);            
-            let node = {word:rootLabel,rootKey:key,children:tops};            
-            tree.push(node);                       
+            let tops = words.filter(x=>x.isTopParent==true); 
+            //检查是否存在父词根
+            if(this.roots[key].parentid>0){
+                let parentKey = `100-${this.roots[key].parentid}`
+                let find = tree.filter(x=>x.rootKey==parentKey);
+                if(find && find.length>0){
+                    tops.forEach(one => {
+                        find[0].children.push(one);//作为子节点添加到父树上
+                    });
+                }else{
+                    console.log("未能找到父节点" + parentKey);
+                }
+            }else{
+                let node = {id:key,word:rootLabel,rootKey:key,children:tops}; 
+                tree.push(node);     
+            }                  
         });
         //console.log(tree);
         cb(tree);
@@ -86,16 +102,19 @@ export default class EnWordStudy{
         {
             cb(elWord);
             return;
-        }        
+        }
+        // for(let i=0;i<ateDict.length;i++){            
+        //     let bw= ateDict[ateDict.length - i -1];
+        //     if(this.isParent(bw,elWord,0,0,true)){                
+        //         elWord.isTopParent = false;
+        //         bw.children.push(elWord);
+        //         break;//从一堆单词中找到父类，从中退出
+        //     }
+        // }        
         //按拆分的数量，从多到少排序。就是尽量找到最长的作为其父类
-        // let sorted = ateDict.sort(this.descSortSplitLen); 
-        // if(elWord.word=="unconvincing"){
-        //     console.log(sorted[0].word + "  total=" + sorted.length + "..." + sorted[0].splitCnt);
-        //     console.log(sorted); 
-        //     console.log(ateDict);   
-        // }
-        for(let i=0;i<ateDict.length;i++){            
-            let bw= ateDict[ateDict.length - i -1];
+        let sorted = ateDict.sort(this.descSortSplitLen);         
+        for(let i=0;i<sorted.length;i++){            
+            let bw= sorted[i];
             // if(elWord.word=="unconvincing")
             //     console.log(`check ..${bw.word} split.cnt=${bw.splitCnt}`);
             if(this.isParent(bw,elWord,0,0,true)){                
@@ -103,19 +122,20 @@ export default class EnWordStudy{
                 bw.children.push(elWord);
                 break;//从一堆单词中找到父类，从中退出
             }
-        }       
+        }
+               
         cb(elWord); 
     }
     //按拆分的数量，从多到少排序
-    descSortSplitLen(a,b){
+    descSortSplitLen(a,b){        
         let flag = 1;
-        // if(a.splitCnt>b.splitCnt)
-        //     return -flag;
-        // if(a.splitCnt<b.splitCnt)
-        //     return flag;
-        if(a.word.length>a.word.length)
+        if(a.splitCnt>b.splitCnt)
+            return -flag;
+        if(a.splitCnt<b.splitCnt)
+            return flag;
+        if(a.word.length>b.word.length)
             return -flag
-        if(a.word.length<a.word.length)
+        if(a.word.length<b.word.length)
             return flag;
         else
             return 0;
