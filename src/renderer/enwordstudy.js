@@ -16,7 +16,7 @@ export default class EnWordStudy{
         let wordSplit = await this.db.getTableAll("wordSplit");
         let wordBases = await this.db.getTableAll("wordbase");
         let wordFreqTmp = await this.db.getTableAll("wordFreq");
-        //console.log(wordFreqList[10000])
+        
         wordBases.forEach(element => {
             let rootKey = `100-${element.id}`;
             this.roots[rootKey] = element;
@@ -27,7 +27,7 @@ export default class EnWordStudy{
             let tmpWord = `key-${eletmp.word}` //需使用专门的key字符串，避免象"length"的单词造成字典工作异常           
             this.dicWordFreq[tmpWord] = eletmp.freq;
         });
-        //console.log(tmpindex);
+       
         //console.log(Object.keys(this.dicWordFreq).length);
         let index = 0;
         wordMasters.forEach(wm => {            
@@ -78,7 +78,7 @@ export default class EnWordStudy{
     }
     async buildTree(cb){
         let tree = [];    
-        console.log(this.allWordRoots);    
+         
         this.allWordRoots.forEach(root => {
             //console.log(root);
             let key = root.rootKey;

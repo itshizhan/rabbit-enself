@@ -104,7 +104,7 @@ import { constants } from 'http2';
                         arrKeys.push(key);
                     }
                 });    
-                console.log(db.roots);
+                //console.log(db.roots);
                 //this.$store.dispatch('SET_EXPORT_TREE', db.roots)           
                 localStorage.setItem('LAST_SELECTED_EXPORT_TREE',arrKeys.join(','));
                 let str = JSON.stringify(db);
