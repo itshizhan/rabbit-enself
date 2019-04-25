@@ -44,11 +44,14 @@ export default class EnWordStudy{
                 if(!this.allWords[rootKey] && this.roots[rootKey]){
                     index ++;
                     this.allWords[rootKey] = [];  
-                    meaning = `${this.roots[rootKey].word} ${this.roots[rootKey].meaning}`
-                    this.allWordRoots.push({index:index,word:rootKey,meaning:meaning});
+                    let _rootWord = this.roots[rootKey].word
+                    meaning = this.roots[rootKey].meaning
+                    let fullMeaning = `${_rootWord} ${meaning}`
+                    this.allWordRoots.push({index:index,rootKey:rootKey,word:_rootWord,meaning:meaning,full:fullMeaning});
                 }   
                 //字根单词节点准备好了才添加
                 if(this.allWords[rootKey]){
+                    wm.full = `${wm.word} ${wm.meaning}`
                     wm.splitCnt = sps.length;
                     // //检查最后一位是否-e，是不的话，splitCnt减一
                     // if(sps[sps.length-1].word=="-e")
@@ -74,12 +77,13 @@ export default class EnWordStudy{
         //     return arr[0].freq;
     }
     async buildTree(cb){
-        let tree = [];        
+        let tree = [];    
+        console.log(this.allWordRoots);    
         this.allWordRoots.forEach(root => {
             //console.log(root);
-            let key = root.word;
+            let key = root.rootKey;
             let words = this.allWords[key];
-            let rootLabel = root.meaning;
+            let rootLabel = root.full;
             //console.log(`key=${key},words.length=${words.length}`)
             this.setWordTree(words);
             let tops = words.filter(x=>x.isTopParent==true); 
@@ -95,7 +99,8 @@ export default class EnWordStudy{
                     console.log("未能找到父节点" + parentKey);
                 }
             }else{
-                let node = {id:key,word:rootLabel,rootKey:key,children:tops}; 
+                let node = {id:key,word:root.word,meaning:root.meaning, full:root.full,rootKey:key,children:tops}; 
+                //console.log(node);
                 tree.push(node);     
             }                  
         });
