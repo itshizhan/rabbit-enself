@@ -12,6 +12,7 @@
 <script>   
     var fs = require('fs'); // 引入fs模块
     import EnWordStudy from "../../enwordstudy";
+import { constants } from 'http2';
     export default {         
         data(){
             return {      
@@ -19,7 +20,7 @@
                 db:null,
                 defaultProps: {
                     children: 'children',
-                    label: 'word'
+                    label: 'full'
                 }
             }
         },
@@ -77,13 +78,15 @@
                 nodes.forEach(nd => {
                     if(nd.rootKey){
                         let key = nd.rootKey;
-                        let root ={rootkey:key,word:{word:key,meaning:nd.word}}
-                        let item = {rootkey:key,topWoods:nd.children};
+                        let root ={root:key,word:{word:nd.word,meaning:nd.meaning}}
+                        
+                        let item = {root:key,words:nd.children};
                         db.roots.push(root);
                         db.words.push(item);
                         arrKeys.push(key);
                     }
                 });    
+                console.log(db.roots);
                 //this.$store.dispatch('SET_EXPORT_TREE', db.roots)           
                 localStorage.setItem('LAST_SELECTED_EXPORT_TREE',arrKeys.join(','));
                 let str = JSON.stringify(db);

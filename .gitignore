@@ -12,3 +12,4 @@ thumbs.db
 !.gitkeep
 src/mp3/destructor.mp3
 src/mp3/periodic.mp3
+wordtree.json
