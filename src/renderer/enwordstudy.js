@@ -5,6 +5,8 @@ export default class EnWordStudy{
     constructor (){
         this.roots = [];//词根字典
         this.allWordRoots = [];//分析单词的词根
+        this.allWordFreq = [];//词频
+        this.dicWordFreq = [];//词频
         this.allWords = [];//词根下所有单词。key=词根，value是单词及其解释        
         this.db = new EnWordsDb();  
     }
@@ -13,10 +15,20 @@ export default class EnWordStudy{
         let wordMasters = await this.db.getTableAll("wordMaster");
         let wordSplit = await this.db.getTableAll("wordSplit");
         let wordBases = await this.db.getTableAll("wordbase");
+        let wordFreqTmp = await this.db.getTableAll("wordFreq");
+        //console.log(wordFreqList[10000])
         wordBases.forEach(element => {
             let rootKey = `100-${element.id}`;
             this.roots[rootKey] = element;
+        });        
+        let tmpindex = 0
+        wordFreqTmp.forEach(eletmp => {
+            tmpindex ++;
+            let tmpWord = `key-${eletmp.word}` //需使用专门的key字符串，避免象"length"的单词造成字典工作异常           
+            this.dicWordFreq[tmpWord] = eletmp.freq;
         });
+        //console.log(tmpindex);
+        //console.log(Object.keys(this.dicWordFreq).length);
         let index = 0;
         wordMasters.forEach(wm => {            
             let sps = wordSplit.filter(x=>x.fromword==wm.word);//某一单词的所有拆分
@@ -52,6 +64,18 @@ export default class EnWordStudy{
         cb(this.allWordRoots);
     }
 
+    getWordFreqVal(word,defaultVal){    
+        let tmpWord = `key-${word}`   
+        if(this.dicWordFreq[tmpWord])
+            return this.dicWordFreq[tmpWord];
+        else
+            return defaultVal;
+        // let arr = this.allWordFreq.filter(x=>x.word==word);
+        // if(arr.length==0)
+        //     return defaultVal;
+        // else
+        //     return arr[0].freq;
+    }
     async buildTree(cb){
         let tree = [];    
         console.log(this.allWordRoots);    
