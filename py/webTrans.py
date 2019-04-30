@@ -83,8 +83,17 @@ def get_word(word):
     # mp = driver.find_element_by_xpath(xpath)
     #ms-on-mouseover="sound('http://res.iciba.com/resource/amp3/oxford/0/b6/fa/b6faa59bdda9a5388596c312cb6d33a6.mp3')
     #mp3 = mp.get_attribute("ms-on-mouseover")    
-    #http://res.iciba.com/resource/amp3        
-    return '{"word":"%s","meaning":"%s","pronunciation":"%s","mp3":"%s"}'%(word,td.text,proun,"")
+    #http://res.iciba.com/resource/amp3       
+    #部分单词解释以“释义”开头
+    mean = td.text
+    tmpMean = ""
+    #print(td.text[0:2])
+    if len(td.text)>0 and td.text[0:2]=="释义":
+        mean = ""
+        tmpMean = td.text[2:-1]
+        print(tmpMean)
+
+    return '{"word":"%s","meaning":"%s","pronunciation":"%s","mp3":"%s","tmp":"%s"}'%(word,mean,proun,"",tmpMean)
 
 if __name__ == '__main__':
     app.run(debug=True)
