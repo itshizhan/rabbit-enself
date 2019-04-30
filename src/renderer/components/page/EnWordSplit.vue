@@ -463,9 +463,15 @@ import { TextDecoder } from 'util';
                         });  
                     }
                 });
-
-                if(!isLast){
-                        
+                //针对able作特殊处理
+                if(_this.tableData.length>0){
+                    let lastSp = _this.tableData[_this.tableData.length-1];                    
+                    if(lastSp.wordbase=="able" || lastSp.wordbase=="ible" ){
+                        if(wordBase=="ly")
+                            lastSp.partWord = lastSp.wordbase.substring(0,1) + "b"
+                        else if(wordBase=="ity")
+                            lastSp.partWord = lastSp.wordbase.substring(0,1) + "bil"
+                    }   
                 }    
                 let row = {
                     word:word,
