@@ -34,7 +34,7 @@
                             <div class="grid-content grid-con-1">
                                 <i class="el-icon-lx-people grid-con-icon"></i>
                                 <div class="grid-cont-right">
-                                    <div class="grid-num">1234</div>
+                                    <div class="grid-num">-1</div>
                                     <div>用户访问量</div>
                                 </div>
                             </div>
@@ -45,7 +45,7 @@
                             <div class="grid-content grid-con-2">
                                 <i class="el-icon-lx-notice grid-con-icon"></i>
                                 <div class="grid-cont-right">
-                                    <div class="grid-num">321</div>
+                                    <div class="grid-num">-1</div>
                                     <div>系统消息</div>
                                 </div>
                             </div>
@@ -56,7 +56,7 @@
                             <div class="grid-content grid-con-3">
                                 <i class="el-icon-lx-goods grid-con-icon"></i>
                                 <div class="grid-cont-right">
-                                    <div class="grid-num">5000</div>
+                                    <div class="grid-num">{{totalWord}}</div>
                                     <div>数量</div>
                                 </div>
                             </div>
@@ -94,10 +94,12 @@
 
 <script>    
     import bus from '../common/bus';
+    import EnWordsDb from "../../enwords"; 
     export default {
         name: 'dashboard',
         data() {
-            return {
+            return {                
+                totalWord:0,
                 name: localStorage.getItem('ms_username'),
                 todoList: [{
                         title: '今天要修复100个bug',
@@ -173,11 +175,13 @@
         computed: {
             role() {
                 return this.name === 'admin' ? '超级管理员' : '普通用户';
-            }
+            },            
         },
         created(){
+            let _this = this;
             this.handleListener();
             this.changeDate();
+            this.initWordInfo();
         },
         activated(){
             this.handleListener();
@@ -187,6 +191,14 @@
             bus.$off('collapse', this.handleBus);
         },
         methods: {
+            initWordInfo(){
+                let _this = this;
+                let db = new EnWordsDb();
+                db.countRows("wordmaster",(err,data)=>{                    
+                    _this.totalWord = data[0].cnt;
+                    db.closeDb();
+                });
+            },
             changeDate(){
                 const now = new Date().getTime();
                 this.data.forEach((item, index) => {

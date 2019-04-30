@@ -202,6 +202,8 @@ import { TextDecoder } from 'util';
                     let obj = JSON.parse(content); 
                     _this.wordMaster.meaning = obj.meaning;  
                     _this.wordMaster.pronunciation = obj.pronunciation; 
+                    if(obj.tmp)
+                        _this.wordMaster.memo += obj.tmp
                 }).catch(function (error) {
                     console.log("error:");
                     console.log(error);

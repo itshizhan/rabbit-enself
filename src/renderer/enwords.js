@@ -248,6 +248,10 @@ export default class EnWordsDb{
         this.db.all("select * from " +tableName, cb);
     }
 
+    countRows(tableName,cb){
+        this.db.all("select count(*) cnt from " + tableName,cb);
+    }
+
     getTableAll(tableName){ 
         let _this = this;
         return new Promise(function(resolve,reject){
