@@ -197,9 +197,12 @@ import { TextDecoder } from 'util';
                 let _this = this;                
                 let url = `http://127.0.0.1:5000/todo/api/v1.0/dict/${this.enWord}`;
                 axios.get(url).then(response => {    
-                    //console.log(response);
-                    let content = response.data.replace(/[\r\n]/g, "");        
-                    let obj = JSON.parse(content); 
+                    //console.log(response.data);
+                    let obj = response.data; 
+                    if(typeof(response.data)=="string"){
+                        let content = response.data.replace(/[\r\n]/g, "");        
+                        obj = JSON.parse(content); 
+                    }                    
                     _this.wordMaster.meaning = obj.meaning;  
                     _this.wordMaster.pronunciation = obj.pronunciation; 
                     if(obj.tmp)

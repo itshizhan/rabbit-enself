@@ -181,17 +181,18 @@
             let _this = this;
             this.handleListener();
             this.changeDate();
-            this.initWordInfo();
+            
         },
         activated(){
             this.handleListener();
+            this.refreshWordInfo();
         },
         deactivated(){
             window.removeEventListener('resize', this.renderChart);
             bus.$off('collapse', this.handleBus);
         },
         methods: {
-            initWordInfo(){
+            refreshWordInfo(){
                 let _this = this;
                 let db = new EnWordsDb();
                 db.countRows("wordmaster",(err,data)=>{                    
