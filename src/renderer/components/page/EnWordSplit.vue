@@ -40,7 +40,7 @@
                 </el-table-column>
             </el-table>
             <div style="width:500px;margin-top:5px;">
-                <el-input v-model="wordMaster.memo" type="textarea" :autosize="{ minRows: 2, maxRows: 4}" placeholder="请录入单词助记" ref="nextInput" @keyup.enter.native="saveWordSplit" ></el-input>
+                <el-input v-model="wordMaster.memo" type="textarea" :autosize="{ minRows: 2, maxRows: 4}" placeholder="请录入单词助记" ref="nextInput" @keydown.native="txtStrInputHandle" ></el-input>
                
             </div>
             
@@ -431,6 +431,13 @@ import { TextDecoder } from 'util';
                     txt = arr[1] + arr[2];//未知何因，ur(e)会拆成"","ur","e",""
                     wordBase = txt;
                     partword = arr[1];                    
+                }else{
+                    arr = txt.split('+');
+                    if(arr.length>1){
+                        txt = arr[0];
+                        wordBase = txt;
+                        partword = arr[0] + arr[1];
+                    }
                 }
                 
                 if(this.wordDb.isRoot(txt)){
@@ -457,7 +464,8 @@ import { TextDecoder } from 'util';
                     if(data.isFind){
                         meaning = data.preWord.meaning;
                         locat = data.preWord.locat;
-                        partword = data.preWord.partWord;
+                        if(!partword)//前面指定了partword时，不作修改
+                            partword = data.preWord.partWord;
                     }else{
                         this.wordDb.matchBase(txt,(err,data)=>{                                        
                             if(data){                        
@@ -473,10 +481,19 @@ import { TextDecoder } from 'util';
                     let lastSp = _this.tableData[_this.tableData.length-1];                    
                     if(lastSp.wordbase=="able" || lastSp.wordbase=="ible" ){
                         if(wordBase=="ly")
-                            lastSp.partWord = lastSp.wordbase.substring(0,1) + "b"
+                            lastSp.partWord = lastSp.wordbase.substring(0,1) + "b";
                         else if(wordBase=="ity")
-                            lastSp.partWord = lastSp.wordbase.substring(0,1) + "bil"
-                    }   
+                            lastSp.partWord = lastSp.wordbase.substring(0,1) + "bil";
+                    }  
+                    if(lastSp.wordbase=="ary" || lastSp.wordbase=="acy" || lastSp.wordbase=="ory"){
+                        if(wordBase.substring(0,1)=="i"){
+                            lastSp.partWord = lastSp.wordbase.substring(0,lastSp.wordbase.length-1)
+                        }else{
+                            if(wordBase=="ly"){
+                                lastSp.partWord = lastSp.wordbase.substring(0,lastSp.wordbase.length-1) + "i"
+                            }
+                        }
+                    } 
                 }    
                 let row = {
                     word:word,
@@ -518,6 +535,8 @@ import { TextDecoder } from 'util';
                         let row ={word:this.enWord,meaning:this.wordMaster.meaning};
                         //添加到下方列表
                         this.wordData.push(row);
+                        if(this.wordData.length>6)
+                            this.wordData.splice(0,1);
                     }
                     this.newWordCheck();   
                 });                             

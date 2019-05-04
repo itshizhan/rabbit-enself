@@ -65,18 +65,29 @@ def get_word(word):
     # xpath = "/html/body/div[4]/div[6]/div[2]/div[1]/div/div/ul"
     # xpath = "/html/body/div[3]/div[6]/div[2]/div[1]/div/div/ul"    #       
     #body > div.screen > div.container > div.container-left > div.js-base-info > div > div > ul
+    #//div[@class='info-article info-base']/div[@class='in-base']/ul
     xpath="//div[@class='info-article info-base']/div[@class='in-base']/ul"
     td = driver.find_element_by_xpath(xpath)    
     #取音标
     # xpath="/html/body/div[4]/div[6]/div[2]/div[1]/div/div/div[1]/div/div[1]/span[1]/span"
     xpath="//div[@class='info-article info-base']/div[@class='in-base']/div[1]/div/div[1]/span[1]/span"
-    xb = driver.find_element_by_xpath(xpath)
-    pat = r"\[(\w*)\]"
-    patcompi = re.compile(pat)
-    patArr = patcompi.findall(xb.text)
-    proun = xb.text
-    if len(patArr)>0:
-        proun = patArr[0]
+    proun=""
+    mean = td.text
+    tmpMean = ""
+    try:        
+        xb = driver.find_element_by_xpath(xpath)
+    except:
+        print("无音标标记")
+        tmpMean = mean
+        mean = ""
+    else:
+        pat = r"\[([\w',:\(\)]*)\]"
+        patcompi = re.compile(pat)
+        patArr = patcompi.findall(xb.text)
+        proun = xb.text
+        if len(patArr)>0:
+            proun = patArr[0]
+    
     #取读音
     # xpath="/html/body/div[4]/div[6]/div[2]/div[1]/div/div/div[1]/div/div[1]/span[1]/i"
     # xpath="/html/body/div[4]/div[6]/div[2]/div[1]/div/div/div[1]/div"
@@ -85,10 +96,9 @@ def get_word(word):
     #mp3 = mp.get_attribute("ms-on-mouseover")    
     #http://res.iciba.com/resource/amp3       
     #部分单词解释以“释义”开头
-    mean = td.text
-    tmpMean = ""
+    
     #print(td.text[0:2])
-    if len(td.text)>0 and td.text[0:2]=="释义":
+    if len(mean)>0 and mean[0:2]=="释义":
         mean = ""
         tmpMean = td.text[2:-1]
         print(tmpMean)
