@@ -14,6 +14,7 @@
     import EnWordStudy from "../../enwordstudy";
 import { constants } from 'http2';
     export default {         
+        name: 'enwordtree',
         data(){
             return {      
                 dataTree:[],
@@ -28,7 +29,7 @@ import { constants } from 'http2';
             // let aa = [{word:"hbc",index:0},{word:"bcddef",index:1},{word:"iij",index:2},{word:"a",index:3},{word:"v",index:4}];
             // //let bb = aa.sort((a,b)=>a.word>b.word);
             // let bb = aa.sort(this.sortedTree);
-            // console.log(bb);
+             console.log("creating...");
             this.db = new EnWordStudy();
             let _this = this;
             this.db.init((data)=>{

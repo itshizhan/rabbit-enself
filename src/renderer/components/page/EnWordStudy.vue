@@ -50,6 +50,7 @@
     var fs = require('fs'); // 引入fs模块
     import EnWordStudy from "../../enwordstudy";
     export default {         
+        name:"enwordstudy",
         data(){
             return {      
                 enWord:'',         

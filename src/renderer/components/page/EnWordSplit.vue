@@ -109,7 +109,8 @@
     import axios from 'axios';
     //import { constants } from 'http2';
 import { TextDecoder } from 'util';
-    export default {         
+    export default {    
+        name:"enwordsplit",     
         data(){
             return {
                 enWord:'',
