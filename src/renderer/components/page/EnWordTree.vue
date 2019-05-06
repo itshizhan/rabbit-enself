@@ -94,8 +94,10 @@ import { constants } from 'http2';
                 let db = {roots:[],words:[]};//数组对象,json不支持字典，转为数据转录
                 let nodes = this.$refs.tree.getCheckedNodes();
                 let arrKeys = [];
+                let cnt = 0;
                 nodes.forEach(nd => {
                     if(nd.rootKey){
+                        cnt ++;
                         let key = nd.rootKey;
                         let root ={root:key,word:{word:nd.word,mean:nd.meaning}}
                         let childs = _this.buildChilds(nd.children);
@@ -112,11 +114,12 @@ import { constants } from 'http2';
                 
                 //console.log(str);
                 // 'flag': 'a'添加 ，w写入
-                fs.writeFile('./wordtree.json', str, { 'flag': 'w' }, function(err) {
+                let fileName = './wordtree.json';
+                fs.writeFile(fileName, str, { 'flag': 'w' }, function(err) {
                     if (err) {
                         throw err;
                     }else{
-                        _this.$alert('写入words.json成功');
+                        _this.$alert(`写入${fileName}成功,共输出词根${cnt}条`);
                     }
                 });
             }

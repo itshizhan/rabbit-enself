@@ -274,7 +274,7 @@ import { TextDecoder } from 'util';
                     parentid:this.rootParent.id,                  
                 };
 
-                this.wordDb.insertEntity("wordbase",data,(err,data)=>{
+                this.wordDb.insertRoot(data,(err,data)=>{
                     if(err){
                         this.$alert(err);
                     }else{

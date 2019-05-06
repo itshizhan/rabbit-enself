@@ -24,29 +24,11 @@ export default class EnWordsDb{
         this.db.all("select id,word,pronunciation,meaning ,100 as pos  from  wordbase union\
              select id, word,pronunciation,meaning, 1 as pos from wordParent order by pos asc",(err,data)=>{                    
             data.forEach(row => {
-                let meaning = row.meaning;
-                let wsp = row.word.split(',');                
-                wsp.forEach(word => {
-                    this.buildWordKey(word,(key)=>{                        
-                        let locat = `${row.pos}-${row.id}`;                        
-                        this.dictPieces[key] ={
-                            id:row.id,
-                            word:key,
-                            meaning: row.word + " " + meaning,
-                            locat:locat
-                        };
-                        if(row.pos==100){
-                            //字根
-                            this.dictRoot[key]={
-                                word:key,
-                                meaning: row.word + " " + meaning,
-                                locat:locat
-                            };
-                        }
-                    });
-                });                
+                this.insertDictRoot(row);           
             });
         });
+
+
         this.db.all("select id,word,pronunciation,meaning,memo from wordMaster",(err,data)=>{
             //保留最后两个值            
             data.forEach(row => {                
@@ -55,6 +37,29 @@ export default class EnWordsDb{
             let last = this.getLastMaster(4,data);
             //console.log(last);
             cb(last);         
+        });
+    }
+    insertDictRoot(row){
+        let meaning = row.meaning;
+        let wsp = row.word.split(',');                
+        wsp.forEach(word => {
+            this.buildWordKey(word,(key)=>{                        
+                let locat = `${row.pos}-${row.id}`;                        
+                this.dictPieces[key] ={
+                    id:row.id,
+                    word:key,
+                    meaning: row.word + " " + meaning,
+                    locat:locat
+                };
+                if(row.pos==100){
+                    //字根
+                    this.dictRoot[key]={
+                        word:key,
+                        meaning: row.word + " " + meaning,
+                        locat:locat
+                    };
+                }
+            });
         });
     }
     getLastMaster(max,data){
@@ -108,6 +113,21 @@ export default class EnWordsDb{
         }
     }
 
+    insertRoot(data,cb){
+        this.insertEntity("wordbase",data,(err,row)=>{ 
+            if(row && row.length>0){           
+                let newId = row[0].newid;
+                let newRow = {
+                    id:newId,
+                    word:data.word,
+                    meaning:data.meaning, 
+                    pos:100                
+                };
+                this.insertDictRoot(newRow); 
+            }
+            cb(err,row);
+        });
+    }
     
 
     insertEntity(tableName,data,cb){
