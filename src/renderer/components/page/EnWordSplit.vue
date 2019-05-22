@@ -430,6 +430,7 @@ import { TextDecoder } from 'util';
                 let hasRoot = (this.rootIndex>-1);
                 let isroot = 0;
                 let partword = '';
+                let plusMean = '';//录入时利用“=”带来的意思
                 //检查是否有（），视为单词中省掉的字母                
                 //let pattern = new RegExp('([a-z]*)\\(([a-z]*)\\)');//取括号前面及里面的字母
                 let pattern = /^([\w\s]*)\((\w*)\)/g;//取括号前面及里面的字母
@@ -444,6 +445,13 @@ import { TextDecoder } from 'util';
                         txt = arr[0];
                         wordBase = txt;
                         partword = arr[0] + arr[1];
+                    }else{
+                        arr = txt.split('=');
+                        if(arr.length>1){
+                            txt = arr[0];
+                            wordBase = txt;
+                            plusMean = arr[1]
+                        }
                     }
                 }
                 
@@ -464,25 +472,29 @@ import { TextDecoder } from 'util';
                 
                 let word = txt;
                 let meaning = '';
-                let locat ='-';                  
-                //取意思
-                let isLast =this.lastPreWord.getLast(txt,(data)=>{
-                    //console.log(data);
-                    if(data.isFind){
-                        meaning = data.preWord.meaning;
-                        locat = data.preWord.locat;
-                        if(!partword)//前面指定了partword时，不作修改
-                            partword = data.preWord.partWord;
-                    }else{
-                        this.wordDb.matchBase(txt,(err,data)=>{                                        
-                            if(data){                        
-                                word = data.word;
-                                meaning = data.meaning;
-                                locat=data.locat;                        
-                            }                        
-                        });  
-                    }
-                });
+                let locat ='-'; 
+                if(plusMean){
+                    meaning = plusMean;//录入利用等于号带了意思
+                }else{              
+                    //取意思
+                    let isLast =this.lastPreWord.getLast(txt,(data)=>{
+                        //console.log(data);
+                        if(data.isFind){
+                            meaning = data.preWord.meaning;
+                            locat = data.preWord.locat;
+                            if(!partword)//前面指定了partword时，不作修改
+                                partword = data.preWord.partWord;
+                        }else{
+                            this.wordDb.matchBase(txt,(err,data)=>{                                        
+                                if(data){                        
+                                    word = data.word;
+                                    meaning = data.meaning;
+                                    locat=data.locat;                        
+                                }                        
+                            });  
+                        }
+                    });
+                }
                 //针对able作特殊处理
                 if(_this.tableData.length>0){
                     let lastSp = _this.tableData[_this.tableData.length-1];                    
@@ -496,13 +508,14 @@ import { TextDecoder } from 'util';
                         if(wordBase.substring(0,1)=="i"){
                             lastSp.partWord = lastSp.wordbase.substring(0,lastSp.wordbase.length-1)
                         }else{
-                            if(wordBase=="ly"){
+                            if(wordBase=="ly" || wordBase.substring(0,1)=='a'){
                                 lastSp.partWord = lastSp.wordbase.substring(0,lastSp.wordbase.length-1) + "i"
                             }
                         }
                     } 
                     if(lastSp.wordbase=="ify" || lastSp.wordbase=="ity" ){
-                        if(wordBase.substring(0,1)=="i"){
+                        let checkBit = wordBase.substring(0,1);
+                        if(checkBit=="i"|| checkBit=='a'||checkBit=='o'){
                             lastSp.partWord = lastSp.wordbase.substring(0,lastSp.wordbase.length-1);
                         }else{
                             lastSp.partWord = lastSp.wordbase.substring(0,lastSp.wordbase.length-1) + "i";

@@ -12,7 +12,6 @@
 <script>   
     var fs = require('fs'); // 引入fs模块
     import EnWordStudy from "../../enwordstudy";
-import { constants } from 'http2';
     export default {         
         name: 'enwordtree',
         data(){
@@ -33,13 +32,15 @@ import { constants } from 'http2';
             this.db = new EnWordStudy();
             let _this = this;
             this.db.init((data)=>{
-                this.db.buildTree((tree)=>{
-                    let sortedTree= tree.sort(this.sortedTree);
-                    this.dataTree = sortedTree;
+                
+                this.db.buildTree((tree)=>{                    
+                    let sortedTree= tree.sort(this.sortedTree);                    
+                    this.dataTree = sortedTree;                   
                     this.$nextTick(function(){
                         this.selectExportNode();
                     });
-                });                         
+                });      
+                                 
             });
             
         } ,
@@ -114,7 +115,7 @@ import { constants } from 'http2';
                 
                 //console.log(str);
                 // 'flag': 'a'添加 ，w写入
-                let fileName = './wordtree.json';
+                let fileName = './src/db/wordtree.json';
                 fs.writeFile(fileName, str, { 'flag': 'w' }, function(err) {
                     if (err) {
                         throw err;

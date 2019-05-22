@@ -18,8 +18,10 @@ export default class EnWordStudy{
         let wordFreqTmp = await this.db.getTableAll("wordFreq");
         
         wordBases.forEach(element => {
-            let rootKey = `100-${element.id}`;
-            this.roots[rootKey] = element;
+            if (element.ishide==0){
+                let rootKey = `100-${element.id}`;
+                this.roots[rootKey] = element;
+            }
         });        
         let tmpindex = 0
         wordFreqTmp.forEach(eletmp => {
@@ -37,9 +39,10 @@ export default class EnWordStudy{
             let root = '';
             let rootKey = '';
             let meaning = '';
+            let wordInRoot = [];//避免同一单词在同一字根中多次出现
             mts.forEach(mt => {            
                 root = mt.word;
-                rootKey = mt.locat;     
+                rootKey = mt.locat;  
                 //准备字根单词节点。只有字根表定义的才显示          
                 if(!this.allWords[rootKey] && this.roots[rootKey]){
                     index ++;
@@ -49,18 +52,25 @@ export default class EnWordStudy{
                     let fullMeaning = `${_rootWord} ${meaning}`
                     this.allWordRoots.push({index:index,rootKey:rootKey,word:_rootWord,meaning:meaning,full:fullMeaning});
                 }   
-                //字根单词节点准备好了才添加
-                if(this.allWords[rootKey]){
+                 
+                //避免同一单词在同一字根中多次出现
+                let isAppend = true;
+                if(wordInRoot[rootKey]){
+                    isAppend = false;
+                }
+                 //字根单词节点准备好了，且字根中没有该单词，才添加
+                if(this.allWords[rootKey] && isAppend){
                     wm.full = `${wm.word} ${wm.meaning}`
                     wm.splitCnt = sps.length;
                     // //检查最后一位是否-e，是不的话，splitCnt减一
                     // if(sps[sps.length-1].word=="-e")
                     //     wm.splitCnt --;
                     wm.splitWords = sps;
-                    this.allWords[rootKey].push(wm);
+                    this.allWords[rootKey].push(wm);                   
+                    wordInRoot[rootKey] = true;
                 }
             });            
-        });       
+        });  
         cb(this.allWordRoots);
     }
 
@@ -77,8 +87,8 @@ export default class EnWordStudy{
         //     return arr[0].freq;
     }
     async buildTree(cb){
-        let tree = [];    
-         
+        let tree = []; 
+        let childs = [];//先将子类根保存起来，添加所有非子类后再添加
         this.allWordRoots.forEach(root => {
             //console.log(root);
             let key = root.rootKey;
@@ -90,21 +100,25 @@ export default class EnWordStudy{
             //检查是否存在父词根
             if(this.roots[key].parentid>0){
                 let parentKey = `100-${this.roots[key].parentid}`
-                let find = tree.filter(x=>x.rootKey==parentKey);
-                if(find && find.length>0){
-                    tops.forEach(one => {
-                        find[0].children.push(one);//作为子节点添加到父树上
-                    });
-                }else{
-                    console.log("未能找到父节点" + parentKey);
-                }
+                childs[parentKey] = tops;//先保存到子节点，避免子节点的单词先于父节点时无显示问题
             }else{
-                let node = {id:key,word:root.word,meaning:root.meaning, full:root.full,rootKey:key,children:tops}; 
-                //console.log(node);
+                let node = {id:key,word:root.word,meaning:root.meaning, full:root.full,rootKey:key,children:tops};
                 tree.push(node);     
-            }                  
-        });
-        //console.log(tree);
+            } 
+        });   
+        //添加子节点
+        for(let parentKey in childs){
+            console.log(parentKey);
+            let tops = childs[parentKey]
+            let find = tree.filter(x=>x.rootKey==parentKey);
+            if(find && find.length>0){
+                tops.forEach(one => {
+                    find[0].children.push(one);//作为子节点添加到父树上
+                });
+            }else{
+                console.log("未能找到父节点" + parentKey);
+            }
+        }  
         cb(tree);
     }
 
@@ -114,7 +128,7 @@ export default class EnWordStudy{
         let ateDict = [];//已处理
         while(wordList.length>ateCnt){
             let levels = wordList.filter(x=>x.splitCnt==keyLen);//取所有该拆分长度的单词
-            levels.forEach(element => {
+            levels.forEach(element => {                
                 this.findParent(ateDict,element,(data)=>{                     
                     ateDict.push(data);//完成后都会将数据加到已处理库中,以后后面单词检查是否为自己的父根
                 });  
