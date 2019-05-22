@@ -180,8 +180,13 @@ export default class EnWordStudy{
             else
                 return true;   //已匹配到了第一个位置的，到了末尾视为成功匹配  
         }
-        if(testPos>=testWord.splitWords.length)
-            return false;
+        if(testPos>=testWord.splitWords.length){
+            let parentLen = parent.splitWords.length;
+            if(pos==parentLen-1 && parent.splitWords[parentLen-1].word=="-e")
+                return true;
+            else
+                return false;
+        }
 
         let minLen = testWord.splitWords.length - parent.splitWords.length;
         if(machfirst){//首位检查,             
@@ -195,7 +200,7 @@ export default class EnWordStudy{
                 return this.isParent(parent,testWord,pos,testPos + 1,true);//还在找首个匹配的位置
         }else{            
             //判断是否最后一位，如果最后一样是-e结尾，不作判断，直接返回真
-            if(pos==parent.splitWords.length-1 && parent.splitWords[pos].word=="-e")
+            if(pos==parent.splitWords.length-1 && (parent.splitWords[pos].word=="-e"))
                 return true;
             if(parent.splitWords[pos].word===testWord.splitWords[testPos].word)
                 return this.isParent(parent,testWord,pos+1,testPos+1,false);

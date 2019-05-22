@@ -105,5 +105,53 @@ def get_word(word):
 
     return '{"word":"%s","meaning":"%s","pronunciation":"%s","mp3":"%s","tmp":"%s"}'%(word,mean,proun,"",tmpMean)
 
+@app.route('/todo/api/v1.0/dict2/<string:word>', methods=['GET'])
+def get_word2(word):    
+    #http://www.iciba.com/structure    
+    driver.get("http://www.youdao.com/w/eng/" + word + "/#keyfrom=dict2.index")
+    time.sleep(0.5)
+    # xpath = "//*[@id="phrsListTab"]/div[2]"    //*[@id="phrsListTab"]/div/ul
+    xpath='//*[@id="phrsListTab"]/div[@class="trans-container"]/ul'
+    td = driver.find_element_by_xpath(xpath)    
+    #取音标
+    # xpath="//*[@id="phrsListTab"]/h2/div/span[1]/span"
+    #import re
+    #patTest = "['fæsɪneɪtə(r)]"
+    #patArr = patcompi.findall(patTest)
+    #pat = r"\[(\w*)\]"
+    xpath='//*[@id="phrsListTab"]/h2/div/span[1]/span'
+    proun=""
+    mean = td.text
+    tmpMean = ""
+    try:
+        xb = driver.find_element_by_xpath(xpath)
+    except:
+        print("无音标标记")
+        tmpMean = mean
+        mean = ""
+    else:
+        pat = r"\[([\w',\(\)]*)\]"
+        patcompi = re.compile(pat)
+        patArr = patcompi.findall(xb.text)
+        proun = xb.text
+        if len(patArr)>0:
+            proun = patArr[0]
+    #取读音
+    # xpath="/html/body/div[4]/div[6]/div[2]/div[1]/div/div/div[1]/div/div[1]/span[1]/i"
+    # xpath="/html/body/div[4]/div[6]/div[2]/div[1]/div/div/div[1]/div"
+    # mp = driver.find_element_by_xpath(xpath)
+    #ms-on-mouseover="sound('http://res.iciba.com/resource/amp3/oxford/0/b6/fa/b6faa59bdda9a5388596c312cb6d33a6.mp3')
+    #mp3 = mp.get_attribute("ms-on-mouseover")    
+    #http://res.iciba.com/resource/amp3       
+    #部分单词解释以“释义”开头
+    #print(td.text[0:2])
+    if len(td.text)>0 and td.text[0:2]=="释义":
+        mean = ""
+        tmpMean = td.text[2:-1]
+        print(tmpMean)
+
+    return '{"word":"%s","meaning":"%s","pronunciation":"%s","mp3":"%s","tmp":"%s"}'%(word,mean,proun,"",tmpMean)
+
+
 if __name__ == '__main__':
     app.run(debug=True)

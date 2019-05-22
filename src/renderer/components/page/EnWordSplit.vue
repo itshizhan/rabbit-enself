@@ -194,9 +194,9 @@ import { TextDecoder } from 'util';
                 let downUrl=`https://sp0.baidu.com/-rM1hT4a2gU2pMbgoY3K/gettts?lan=uk&text=${word}&spd=2&source=alading`; 
                 ipcRenderer.send('download',downUrl+"+"+fileName) 
             },
-            downMeaning:function(){
+            downMeaning:function(dictName){
                 let _this = this;                
-                let url = `http://127.0.0.1:5000/todo/api/v1.0/dict/${this.enWord}`;
+                let url = `http://127.0.0.1:5000/todo/api/v1.0/${dictName}/${this.enWord}`;
                 axios.get(url).then(response => {    
                     //console.log(response.data);
                     let obj = response.data; 
@@ -412,7 +412,13 @@ import { TextDecoder } from 'util';
                         break;
                     case 68://'d'  ctrl+d 为查字典
                         if(event.ctrlKey){
-                            this.downMeaning();
+                            this.downMeaning("dict");
+                            event.stopPropagation();
+                        }
+                        break;
+                    case 70://'f'  ctrl+f 为查字典2
+                        if(event.ctrlKey){
+                            this.downMeaning("dict2");
                             event.stopPropagation();
                         }
                         break;
@@ -495,6 +501,13 @@ import { TextDecoder } from 'util';
                             }
                         }
                     } 
+                    if(lastSp.wordbase=="ify" || lastSp.wordbase=="ity" ){
+                        if(wordBase.substring(0,1)=="i"){
+                            lastSp.partWord = lastSp.wordbase.substring(0,lastSp.wordbase.length-1);
+                        }else{
+                            lastSp.partWord = lastSp.wordbase.substring(0,lastSp.wordbase.length-1) + "i";
+                        }
+                    } 
                 }    
                 let row = {
                     word:word,
@@ -525,6 +538,8 @@ import { TextDecoder } from 'util';
                 //有部分单词会没有解释，使用说明的内容作为解释
                 if(this.wordMaster.meaning.trim().length==0){
                     this.wordMaster.meaning = this.wordMaster.memo;
+                    //清空备注
+                    this.wordMaster.memo="";
                 }
                 //console.log(this.tableData);
                 this.wordDb.saveSplit(word,this.tableData,(err,data)=>{

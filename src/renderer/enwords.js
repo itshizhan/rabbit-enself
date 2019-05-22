@@ -41,21 +41,24 @@ export default class EnWordsDb{
     }
     insertDictRoot(row){
         let meaning = row.meaning;
+        if(row.pos==100){
+            meaning = row.word + " " + meaning;
+        }
         let wsp = row.word.split(',');                
         wsp.forEach(word => {
             this.buildWordKey(word,(key)=>{                        
-                let locat = `${row.pos}-${row.id}`;                        
+                let locat = `${row.pos}-${row.id}`;                                        
                 this.dictPieces[key] ={
                     id:row.id,
                     word:key,
-                    meaning: row.word + " " + meaning,
+                    meaning: meaning,
                     locat:locat
                 };
                 if(row.pos==100){
                     //字根
                     this.dictRoot[key]={
                         word:key,
-                        meaning: row.word + " " + meaning,
+                        meaning: meaning,
                         locat:locat
                     };
                 }

@@ -55,6 +55,7 @@
 <script>   
     import EnWordsDb from "../../enwords";
     export default {         
+        name:"单词分析",
         data(){
             return {
                 enWord:'',
